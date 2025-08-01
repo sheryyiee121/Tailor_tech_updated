@@ -1,0 +1,108 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 2298,
+      "type": "SCALAR",
+      "max": [468],
+      "min": [0]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 469,
+      "type": "VEC3",
+      "max": [
+        0.0017187000485137105, 0.000731090025510639, 0.004946520086377859
+      ],
+      "min": [
+        -0.0017187000485137105, -0.00101968995295465, -0.004956639837473631
+      ],
+      "name": "POSITION"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 12,
+      "componentType": 5126,
+      "count": 469,
+      "type": "VEC3",
+      "max": [0.9973635077476501, 0.9518553614616394, 1.0000030994415283],
+      "min": [-0.9973635077476501, -1.0000044107437134, -0.9996564388275146],
+      "name": "NORMAL"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 24,
+      "componentType": 5126,
+      "count": 469,
+      "type": "VEC2",
+      "max": [0.970990002155304, 0.9780799746513367],
+      "min": [0.02102000080049038, 0.03205001354217529],
+      "name": "TEXCOORD_0"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "normalized": false,
+      "count": 42,
+      "type": "SCALAR",
+      "max": [1.3666666666666667],
+      "min": [0]
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 168,
+      "componentType": 5126,
+      "normalized": false,
+      "count": 42,
+      "type": "VEC3",
+      "max": [
+        -0.00047491429722867906, 0.0048936414532363415, 0.005558086093515158
+      ],
+      "min": [
+        -0.0006072446703910828, 0.004506061319261789, 5.968780897092074e-5
+      ]
+    }
+  ],
+  "animations": [
+    {
+      "channels": [
+        { "sampler": 0, "target": { "node": -1, "path": "translation" } }
+      ],
+      "samplers": [{ "input": 4, "interpolation": "CUBICSPLINE", "output": 5 }],
+      "name": "mixamo.com"
+    }
+  ],
+  "asset": { "generator": "Aspose.3D 24.6.0", "version": "2.0" },
+  "buffers": [{ "uri": "buffer.bin", "byteLength": 20288 }],
+  "bufferViews": [
+    { "buffer": 0, "byteOffset": 0, "byteLength": 4596, "target": 34963 },
+    {
+      "buffer": 0,
+      "byteOffset": 4600,
+      "byteLength": 15008,
+      "byteStride": 32,
+      "target": 34962
+    },
+    { "buffer": 0, "byteOffset": 19612, "byteLength": 672 }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": { "POSITION": 1, "NORMAL": 2, "TEXCOORD_0": 3 },
+          "indices": 0,
+          "mode": 4
+        }
+      ],
+      "name": "obj1mesh"
+    }
+  ],
+  "nodes": [{ "mesh": 0, "name": "obj1" }],
+  "scene": 0,
+  "scenes": [{ "nodes": [0] }]
+}

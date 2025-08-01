@@ -1,0 +1,11 @@
+@import "tailwindcss";
+.zoom-out {
+    transform: scale(0.70); /* Adjust the value between 0 and 1 to zoom out */
+  }
+
+
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap');
+
+
+
+
