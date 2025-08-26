@@ -1,11 +1,144 @@
 @import "tailwindcss";
-.zoom-out {
-    transform: scale(0.70); /* Adjust the value between 0 and 1 to zoom out */
+
+/* Remove problematic zoom scaling */
+/* .zoom-out {
+    transform: scale(0.70);
+} */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Global styles for better text rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+}
+
+/* Ensure proper zoom handling */
+html {
+  zoom: 1;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fix for dashboard layout - only apply to dashboard pages */
+.dashboard-page #root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure proper text sizing at all zoom levels */
+@media screen and (max-width: 1200px) {
+  html {
+    font-size: 15px;
   }
+}
 
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
 
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap');
+@media screen and (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+}
 
+/* High DPI display support */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
 
+/* Ensure buttons and inputs are properly sized for touch */
+button {
+  font-size: 16px;
+  min-height: 44px;
+  min-width: 44px;
+}
 
+/* Inputs should not have min-width/height constraints */
+input,
+textarea,
+select {
+  font-size: 16px;
+  /* Prevents zoom on iOS */
+}
 
+/* Fix for any potential overflow issues */
+.dashboard-container {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Dashboard-specific text contrast */
+.dashboard-page .text-white {
+  color: #ffffff !important;
+}
+
+.dashboard-page .text-black {
+  color: #000000 !important;
+}
+
+/* Simplified input styles - prevent any interference */
+input,
+textarea,
+select {
+  /* Basic resets */
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Prevent animations */
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* Focus state - minimal styling */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  /* Keep focus visible but don't interfere */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Custom Order Form - Force stable inputs */
+.custom-order-form input,
+.custom-order-form textarea,
+.custom-order-form select {
+  outline: none !important;
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+.custom-order-form input:focus,
+.custom-order-form textarea:focus,
+.custom-order-form select:focus {
+  outline: none !important;
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
