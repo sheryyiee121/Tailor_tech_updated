@@ -41,13 +41,27 @@ app.get("/search", async (req, res) => {
     try {
         console.log(`Searching for: "${query}"`);
 
+        // Filter results to focus on actual clothing items
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             query
-        )}&cx=${CX}&searchType=image&key=${API_KEY}&num=10`;
+        )}&cx=${CX}&searchType=image&key=${API_KEY}&num=10&imgType=photo&imgSize=large`;
 
         const response = await axios.get(url);
 
-        const items = response.data.items?.map(item => ({
+        // Filter out accessories and non-clothing items
+        const excludeKeywords = ['bag', 'purse', 'handbag', 'wallet', 'watch', 'jewelry', 'shoes', 'belt', 'accessory'];
+
+        const items = response.data.items?.filter(item => {
+            const titleLower = (item.title || '').toLowerCase();
+            const snippetLower = (item.snippet || '').toLowerCase();
+
+            // Check if it's likely an accessory
+            const isAccessory = excludeKeywords.some(keyword =>
+                titleLower.includes(keyword) || snippetLower.includes(keyword)
+            );
+
+            return !isAccessory;
+        }).map(item => ({
             title: item.title,
             link: item.link, // image URL
             context: item.image.contextLink, // where it came from

@@ -149,7 +149,8 @@ class GoogleLensService {
     async searchByText(query) {
         try {
             // Try backend proxy first (to avoid CORS issues)
-            const enhancedQuery = `${query} buy online fashion clothing store`;
+            // Enhanced query to specifically target clothing items, not accessories
+            const enhancedQuery = `${query} -bag -purse -handbag -wallet -accessory clothing wear apparel outfit jacket shirt dress`;
             const response = await fetch(`${this.backendUrl}/search?q=${encodeURIComponent(enhancedQuery)}`);
 
             if (response.ok) {

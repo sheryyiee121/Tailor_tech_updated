@@ -29,8 +29,8 @@ export default async function handler(req, res) {
     }
 
     // Your Google Custom Search API credentials
-    const API_KEY = process.env.GOOGLE_API_KEY || "AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE";
-    const CX = process.env.GOOGLE_CX || "e7c5ff0f989d54294";
+    const API_KEY = "AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE";
+    const CX = "e7c5ff0f989d54294";
 
     try {
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
