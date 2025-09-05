@@ -102,14 +102,17 @@ const SignupRedesigned = () => {
                     className="w-full max-w-md"
                 >
                     {/* Logo */}
-                    <Link to="/" className="inline-block mb-8">
+                    <div
+                        onClick={() => navigate('/')}
+                        className="inline-block mb-8 cursor-pointer hover:opacity-80 transition-opacity"
+                    >
                         <div className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl flex items-center justify-center">
                                 <Sparkles className="w-6 h-6 text-white" />
                             </div>
                             <span className="text-2xl font-bold text-gray-900">TailorTech</span>
                         </div>
-                    </Link>
+                    </div>
 
                     {/* Header */}
                     <div className="mb-8">

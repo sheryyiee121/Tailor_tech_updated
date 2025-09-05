@@ -137,9 +137,11 @@ const Navbar = () => {
                 </div>
               </div>
             ))}
-            <button className="w-full bg-gray-700 text-white px-6 py-3 rounded-full font-medium uppercase tracking-wide transition-all duration-300 ease-in-out hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-              Get Started
-            </button>
+            <Link to={'/signup'}>
+              <button className="w-full bg-gray-700 text-white px-6 py-3 rounded-full font-medium uppercase tracking-wide transition-all duration-300 ease-in-out hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                Get Started
+              </button>
+            </Link>
           </div>
         </div>
       </nav>

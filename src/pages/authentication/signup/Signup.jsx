@@ -1,12 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import HeroImage from '../../../assets/images/sign2.jpg';
 import { useState } from 'react';
-import axios from 'axios';
 import { useAuth } from '../../../hooks/useAuth';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, signUpWithEmail } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -35,43 +34,22 @@ const Signup = () => {
     }
 
     try {
-      // Configure axios with proper CORS settings
-      const response = await axios({
-        method: 'POST',
-        url: 'http://localhost:5112/api/auth/signup',
-        data: {
-          Email: formData.email,
-          Password: formData.password,
-          Name: formData.email.split('@')[0] // Extract name from email as fallback
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        withCredentials: false, // Try without credentials first
-        timeout: 10000 // 10 second timeout
-      });
+      // Use Firebase email/password authentication
+      const result = await signUpWithEmail(formData.email, formData.password);
+      if (result.success) {
+        setMessage("Account created successfully! You can now sign in.");
+        setFormData({ email: '', password: '', confirmPassword: '' }); // Clear form
 
-      setMessage(response.data.message || "Account created successfully!");
-      setFormData({ email: '', password: '', confirmPassword: '' }); // Clear form
-
-    } catch (err) {
-      console.error('Signup error:', err); // Debug logging
-
-      if (err.code === 'ECONNABORTED') {
-        setError('Request timeout. Please try again.');
-      } else if (err.response) {
-        // Server responded with error status
-        const errorMsg = err.response.data?.message ||
-          (err.response.data?.errors ? Object.values(err.response.data.errors).flat().join(' ') :
-            `Server error: ${err.response.status}`);
-        setError(errorMsg);
-      } else if (err.request) {
-        // Request was made but no response received (likely CORS)
-        setError('Unable to connect to server. Please check if the server is running.');
+        // Optionally redirect to dashboard or sign-in page
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError(result.error || "Account creation failed. Please try again.");
       }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError('An unexpected error occurred during account creation. Please try again.');
     } finally {
       setIsLoading(false);
     }
