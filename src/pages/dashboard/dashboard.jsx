@@ -8,8 +8,22 @@ import promptStorageService from "../../services/promptStorageService";
 const Dashboard = () => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Check if mobile on component mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleGenerate = async () => {
     if (prompt) {
@@ -38,6 +52,9 @@ const Dashboard = () => {
     "Winter coat with fur collar"
   ];
 
+  // Mobile: show only 2 prompts, Desktop: show all 6
+  const displayPrompts = isMobile ? quickPrompts.slice(0, 2) : quickPrompts;
+
   const features = [
     { icon: Shirt, title: "3D Try-On", desc: "Virtual fitting experience" },
     { icon: Palette, title: "AI Design", desc: "Smart style generation" },
@@ -47,27 +64,52 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      <div className="flex h-screen bg-black text-white font-poppins overflow-hidden" style={{ margin: 0, padding: 0, maxWidth: 'none', textAlign: 'left' }}>
+      <div className="flex flex-col lg:flex-row h-screen bg-black text-white font-poppins overflow-hidden" style={{ margin: 0, padding: 0, maxWidth: 'none', textAlign: 'left' }}>
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-black/80 text-white rounded-lg border border-gray-700"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
+
         {/* Premium Black Sidebar */}
         <motion.aside
           initial={{ x: -100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-72 h-full flex flex-col justify-between border-r border-gray-800 bg-black flex-shrink-0 z-50"
+          className={`w-full lg:w-80 xl:w-96 h-auto lg:h-full flex flex-col justify-between border-r-0 lg:border-r border-b lg:border-b-0 border-gray-800 bg-black flex-shrink-0 z-50 ${isMobile ? (sidebarOpen ? 'fixed top-0 left-0 h-screen' : 'hidden') : ''
+            }`}
         >
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
+            {/* Mobile Close Button */}
+            {isMobile && (
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden absolute top-4 right-4 p-2 text-white hover:bg-white/10 rounded-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+
             {/* Premium Brand */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
+              className="mb-6 lg:mb-8"
             >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-black" />
+              <div className="flex items-center space-x-2 lg:space-x-3 mb-2">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-white rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 lg:w-6 lg:h-6 text-black" />
                 </div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-white">
+                <h1 className="text-lg lg:text-2xl font-extrabold tracking-tight text-white">
                   TAILOR TECH
                 </h1>
               </div>
@@ -75,11 +117,11 @@ const Dashboard = () => {
             </motion.div>
 
             {/* Navigation */}
-            <nav className="flex flex-col space-y-3">
+            <nav className="flex flex-row lg:flex-col space-x-2 lg:space-x-0 lg:space-y-3">
               {[
                 { href: "/dashboard", label: "Homepage", icon: Star },
                 { href: "/about", label: "About", icon: Users },
-                { href: "/gallery", label: "Digital Gallery", icon: Camera }
+                { href: "/gallery", label: "Gallery", icon: Camera }
               ].map((item, index) => (
                 <motion.a
                   key={item.href}
@@ -87,37 +129,37 @@ const Dashboard = () => {
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm uppercase hover:bg-white hover:text-black transition-all duration-300 rounded-xl group"
+                  className="flex items-center space-x-2 lg:space-x-3 px-3 lg:px-4 py-2 lg:py-3 text-xs lg:text-sm uppercase hover:bg-white hover:text-black transition-all duration-300 rounded-xl group flex-1 lg:flex-none justify-center lg:justify-start"
                 >
-                  <item.icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-medium">{item.label}</span>
+                  <item.icon className="w-3 h-3 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform duration-300" />
+                  <span className="font-medium hidden sm:block lg:block">{item.label}</span>
                 </motion.a>
               ))}
             </nav>
           </div>
 
           {/* User Profile Section */}
-          <div className="p-6 border-t border-gray-800">
+          <div className="p-4 lg:p-6 border-t border-gray-800">
             <UserProfile />
           </div>
         </motion.aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center relative overflow-y-auto bg-gradient-to-br from-black via-gray-900 to-black">
+        <main className="flex-1 flex items-start lg:items-center justify-center relative overflow-y-auto bg-gradient-to-br from-black via-gray-900 to-black min-h-0">
           {/* Content */}
           {isDashboardHome ? (
-            <div className="flex flex-col items-center justify-center text-center space-y-12 relative z-10 max-w-6xl mx-auto px-6 py-12">
+            <div className="flex flex-col items-center justify-start lg:justify-center text-center space-y-4 lg:space-y-8 relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-8 w-full min-h-screen lg:min-h-0">
               {/* Premium Title */}
               <motion.div
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="space-y-6"
+                className="space-y-3 lg:space-y-6"
               >
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold uppercase tracking-widest text-white drop-shadow-2xl leading-tight">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl xl:text-6xl font-bold uppercase tracking-wider lg:tracking-widest text-white drop-shadow-2xl leading-tight px-2">
                   Design Your Perfect Outfit
                 </h2>
-                <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
+                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 max-w-4xl mx-auto leading-relaxed font-light px-2">
                   Experience the future of fashion with AI-powered 3D clothing visualization and virtual try-on technology
                 </p>
               </motion.div>
@@ -127,11 +169,11 @@ const Dashboard = () => {
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                className="w-full max-w-3xl space-y-6"
+                className="w-full max-w-4xl space-y-3 lg:space-y-5"
               >
                 {/* Quick Prompts */}
-                <div className="flex flex-wrap justify-center gap-3 mb-6">
-                  {quickPrompts.map((promptText, index) => (
+                <div className="flex flex-wrap justify-center gap-2 lg:gap-3 mb-4 lg:mb-6">
+                  {displayPrompts.map((promptText, index) => (
                     <motion.button
                       key={index}
                       initial={{ scale: 0, opacity: 0 }}
@@ -142,7 +184,7 @@ const Dashboard = () => {
                         promptStorageService.savePrompt(promptText);
                         console.log(`💾 Quick Prompt Saved: "${promptText}"`);
                       }}
-                      className="px-4 py-2 bg-white hover:bg-gray-100 text-black border border-gray-200 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 shadow-lg"
+                      className="px-3 py-2 lg:px-4 lg:py-2 bg-white hover:bg-gray-100 text-black border border-gray-200 rounded-full text-xs lg:text-sm font-medium transition-all duration-300 hover:scale-105 shadow-lg whitespace-nowrap"
                     >
                       {promptText}
                     </motion.button>
@@ -156,10 +198,10 @@ const Dashboard = () => {
                     placeholder="Describe your dream outfit... (e.g., A red leather jacket with black details)"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    className="w-full p-6 bg-white text-black border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-white/20 focus:border-white text-lg font-medium placeholder:text-gray-500 transition-all duration-300 shadow-2xl"
+                    className="w-full p-4 lg:p-6 bg-white text-black border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-white/20 focus:border-white text-base lg:text-lg font-medium placeholder:text-gray-500 transition-all duration-300 shadow-2xl"
                   />
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <Sparkles className="w-6 h-6 text-gray-400" />
+                  <div className="absolute right-3 lg:right-4 top-1/2 transform -translate-y-1/2">
+                    <Sparkles className="w-5 h-5 lg:w-6 lg:h-6 text-gray-400" />
                   </div>
                 </div>
 
@@ -169,18 +211,18 @@ const Dashboard = () => {
                   disabled={!prompt || isGenerating}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative group px-12 py-4 rounded-2xl font-bold uppercase text-lg transition-all duration-500 transform shadow-2xl ${prompt && !isGenerating
+                  className={`relative group px-8 lg:px-12 py-3 lg:py-4 rounded-2xl font-bold uppercase text-base lg:text-lg transition-all duration-500 transform shadow-2xl w-full sm:w-auto ${prompt && !isGenerating
                     ? "bg-white text-black hover:bg-gray-100 hover:shadow-white/25"
                     : "bg-gray-800 text-gray-400 cursor-not-allowed"
                     }`}
                 >
                   {isGenerating ? (
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center space-x-3">
                       <div className="w-5 h-5 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
                       <span>Generating...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center space-x-3">
                       <span>Generate Outfit</span>
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
@@ -193,7 +235,7 @@ const Dashboard = () => {
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 1.0 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 w-full max-w-6xl"
               >
                 {features.map((feature, index) => (
                   <motion.div
@@ -201,13 +243,13 @@ const Dashboard = () => {
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 1.2 + index * 0.1 }}
-                    className="flex flex-col items-center text-center p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all duration-300 group"
+                    className="flex flex-col items-center text-center p-3 lg:p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl lg:rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all duration-300 group"
                   >
-                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <feature.icon className="w-8 h-8 text-black" />
+                    <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-xl lg:rounded-2xl flex items-center justify-center mb-2 lg:mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <feature.icon className="w-6 h-6 lg:w-8 lg:h-8 text-black" />
                     </div>
-                    <h3 className="font-semibold text-white mb-2 text-lg">{feature.title}</h3>
-                    <p className="text-sm text-gray-400">{feature.desc}</p>
+                    <h3 className="font-semibold text-white mb-1 lg:mb-2 text-sm lg:text-lg">{feature.title}</h3>
+                    <p className="text-xs lg:text-sm text-gray-400">{feature.desc}</p>
                   </motion.div>
                 ))}
               </motion.div>

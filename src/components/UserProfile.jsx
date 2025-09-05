@@ -44,10 +44,10 @@ const UserProfile = () => {
                 </div>
             </div>
 
-            {/* Sign Out Button */}
+            {/* Sign Out Button - Hidden on mobile */}
             <button
                 onClick={handleSignOut}
-                className="w-full px-3 py-2 text-sm text-white hover:text-black hover:bg-white rounded-lg transition-all duration-300 font-medium border border-white/20 hover:border-white"
+                className="hidden lg:block w-full px-3 py-2 text-sm text-white hover:text-black hover:bg-white rounded-lg transition-all duration-300 font-medium border border-white/20 hover:border-white"
             >
                 Sign Out
             </button>
