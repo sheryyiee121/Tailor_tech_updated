@@ -23,11 +23,13 @@ class GoogleLensService {
     detectBackendUrl() {
         // Check if we're in development
         if (import.meta.env.DEV) {
+            console.log('🔧 Development mode detected - using localhost:5000');
             return 'http://localhost:5000';
         }
 
         // Check for custom backend URL
         if (import.meta.env.VITE_BACKEND_URL) {
+            console.log(`🔧 Custom backend URL: ${import.meta.env.VITE_BACKEND_URL}`);
             return import.meta.env.VITE_BACKEND_URL;
         }
 
@@ -37,9 +39,11 @@ class GoogleLensService {
 
         // Production - detect platform
         const hostname = window.location.hostname;
+        console.log(`🌐 Detecting platform for hostname: ${hostname}`);
 
         // Vercel deployment
         if (hostname.includes('vercel.app') || hostname.includes('.vercel.app')) {
+            console.log('✅ Vercel deployment detected - using /api');
             return '/api';
         }
 
@@ -155,14 +159,26 @@ class GoogleLensService {
             // Try backend proxy first (to avoid CORS issues)
             // Enhanced query to specifically target clothing items, not accessories
             const enhancedQuery = `${query} -bag -purse -handbag -wallet -accessory clothing wear apparel outfit jacket shirt dress`;
+
+            console.log(`🔍 Searching with backend URL: ${this.backendUrl}`);
+            console.log(`🔍 Enhanced query: ${enhancedQuery}`);
+
             const response = await fetch(`${this.backendUrl}/search?q=${encodeURIComponent(enhancedQuery)}`);
+
+            console.log(`📡 API Response status: ${response.status}`);
 
             if (response.ok) {
                 const data = await response.json();
+                console.log(`✅ API Success: Found ${data.results?.length || 0} results`);
                 return this.formatCustomSearchResults(data.results || []);
+            } else {
+                const errorText = await response.text();
+                console.error(`❌ API Error ${response.status}: ${errorText}`);
+                throw new Error(`API returned ${response.status}: ${errorText}`);
             }
         } catch (error) {
-            console.warn('Backend proxy not available, using mock data:', error);
+            console.error('❌ Search API failed:', error);
+            console.warn('🔄 Falling back to mock data');
         }
 
         // Fallback to mock data if backend is not available

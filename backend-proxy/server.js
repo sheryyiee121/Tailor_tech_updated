@@ -52,19 +52,42 @@ app.get("/search", async (req, res) => {
 
         const response = await axios.get(url);
 
-        // Filter out accessories and non-clothing items
-        const excludeKeywords = ['bag', 'purse', 'handbag', 'wallet', 'watch', 'jewelry', 'shoes', 'belt', 'accessory'];
+        // Filter out irrelevant items with comprehensive filtering
+        const excludeKeywords = [
+            // Accessories
+            'bag', 'purse', 'handbag', 'wallet', 'clutch', 'tote', 'satchel', 'backpack', 'pouch', 'accessory',
+            // Jewelry & Watches
+            'jewelry', 'watch', 'necklace', 'bracelet', 'ring', 'earring', 'chain',
+            // Footwear
+            'shoe', 'boot', 'sneaker', 'sandal', 'heel', 'loafer', 'slipper',
+            // Other accessories
+            'belt', 'hat', 'cap', 'sunglasses', 'scarf', 'glove', 'tie',
+            // Non-clothing items
+            'phone', 'case', 'cover', 'toy', 'doll', 'food', 'drink', 'furniture', 'electronics',
+            'home', 'kitchen', 'car', 'auto', 'book', 'magazine', 'poster', 'art', 'painting'
+        ];
+
+        // Positive clothing keywords
+        const clothingKeywords = ['shirt', 'dress', 'jacket', 'coat', 'pants', 'jeans', 'skirt', 'blouse', 'sweater', 'hoodie', 'top', 'bottom', 'clothing', 'apparel', 'fashion'];
 
         const items = response.data.items?.filter(item => {
             const titleLower = (item.title || '').toLowerCase();
             const snippetLower = (item.snippet || '').toLowerCase();
+            const contextLower = (item.image?.contextLink || '').toLowerCase();
+            const combinedText = `${titleLower} ${snippetLower} ${contextLower}`;
 
-            // Check if it's likely an accessory
-            const isAccessory = excludeKeywords.some(keyword =>
-                titleLower.includes(keyword) || snippetLower.includes(keyword)
+            // Check if it has irrelevant keywords
+            const hasIrrelevantKeyword = excludeKeywords.some(keyword =>
+                combinedText.includes(keyword)
             );
 
-            return !isAccessory;
+            // Check if it has clothing keywords
+            const hasClothingKeyword = clothingKeywords.some(keyword =>
+                combinedText.includes(keyword)
+            );
+
+            // Return items that don't have irrelevant keywords OR have strong clothing keywords
+            return !hasIrrelevantKeyword || hasClothingKeyword;
         }).map(item => ({
             title: item.title,
             link: item.link, // image URL
