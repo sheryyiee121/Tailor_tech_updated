@@ -77,23 +77,12 @@ class GoogleLensService {
                 console.log('🔄 Using default prompt: "fashion clothing"');
             }
 
-            // First, try Google Lens image search if we have an image URL
-            if (imageUrl && this.scrapingDogApiKey) {
-                console.log('Using Google Lens image search via ScrapingDog API');
-                const lensResults = await this.searchByImage(imageUrl);
-                if (lensResults && lensResults.length > 0) {
-                    return {
-                        success: true,
-                        results: lensResults,
-                        searchType: 'image_lens',
-                        query: searchPrompt,
-                        imageUrl: imageUrl
-                    };
-                }
-            }
+            console.log(`🔍 Starting search with prompt: "${searchPrompt}"`);
+            console.log(`🔍 Environment check - VITE_GOOGLE_API_KEY: ${import.meta.env.VITE_GOOGLE_API_KEY ? 'SET' : 'NOT SET'}`);
+            console.log(`🔍 Environment check - VITE_GOOGLE_SEARCH_ENGINE_ID: ${import.meta.env.VITE_GOOGLE_SEARCH_ENGINE_ID ? 'SET' : 'NOT SET'}`);
 
-            // Fallback to text-based search
-            console.log('Falling back to text-based search');
+            // SKIP IMAGE SEARCH FOR NOW - GO DIRECTLY TO TEXT SEARCH TO TEST API
+            console.log('🔄 Going directly to text-based search for testing');
             const textResults = await this.searchByText(searchPrompt);
 
             return {
