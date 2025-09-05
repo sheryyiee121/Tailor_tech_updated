@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             searchQuery
-        )}&cx=${CX}&searchType=image&imgType=photo&imgSize=large&key=${API_KEY}&num=10`;
+        )}&cx=${CX}&searchType=image&imgType=photo&imgSize=large&key=${API_KEY}&num=20`;
 
         const response = await fetch(url);
         const data = await response.json();

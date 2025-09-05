@@ -5,9 +5,13 @@ import cors from "cors";
 const app = express();
 const PORT = 5000;
 
+// Load environment variables
+import dotenv from 'dotenv';
+dotenv.config();
+
 // Your Google Custom Search API credentials
-const API_KEY = "AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE";
-const CX = "e7c5ff0f989d54294";
+const API_KEY = process.env.GOOGLE_API_KEY || "AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE";
+const CX = process.env.GOOGLE_SEARCH_ENGINE_ID || "e7c5ff0f989d54294";
 
 // Enable CORS for frontend requests
 app.use(cors({
@@ -44,7 +48,7 @@ app.get("/search", async (req, res) => {
         // Filter results to focus on actual clothing items
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             query
-        )}&cx=${CX}&searchType=image&key=${API_KEY}&num=10&imgType=photo&imgSize=large`;
+        )}&cx=${CX}&searchType=image&key=${API_KEY}&num=20&imgType=photo&imgSize=large`;
 
         const response = await axios.get(url);
 

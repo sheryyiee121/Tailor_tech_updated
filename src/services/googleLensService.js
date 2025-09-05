@@ -31,6 +31,10 @@ class GoogleLensService {
             return import.meta.env.VITE_BACKEND_URL;
         }
 
+
+
+
+
         // Production - detect platform
         const hostname = window.location.hostname;
 
@@ -358,44 +362,39 @@ class GoogleLensService {
         const searchTerm = query || 'fashion item';
         const lowerSearchTerm = searchTerm.toLowerCase();
 
-        return [
-            {
-                title: `${searchTerm} - Premium Collection | Fashion Store`,
-                link: 'https://example-fashion-store.com/product/1',
-                image: 'https://via.placeholder.com/300x400/000000/FFFFFF?text=Fashion+Item+1',
-                snippet: `Discover our premium ${lowerSearchTerm} collection. High-quality materials and modern design.`,
-                displayLink: 'example-fashion-store.com',
-                price: '$89.99',
-                source: 'mock'
-            },
-            {
-                title: `Stylish ${searchTerm} | Designer Brand`,
-                link: 'https://designer-brand.com/product/2',
-                image: 'https://via.placeholder.com/300x400/333333/FFFFFF?text=Designer+Item',
-                snippet: `Elegant ${lowerSearchTerm} perfect for any occasion. Available in multiple sizes and colors.`,
-                displayLink: 'designer-brand.com',
-                price: '$129.99',
-                source: 'mock'
-            },
-            {
-                title: `Affordable ${searchTerm} Collection`,
-                link: 'https://budget-fashion.com/product/3',
-                image: 'https://via.placeholder.com/300x400/666666/FFFFFF?text=Budget+Fashion',
-                snippet: `Quality ${lowerSearchTerm} at unbeatable prices. Free shipping on orders over $50.`,
-                displayLink: 'budget-fashion.com',
-                price: '$39.99',
-                source: 'mock'
-            },
-            {
-                title: `Luxury ${searchTerm} - Exclusive Design`,
-                link: 'https://luxury-boutique.com/product/4',
-                image: 'https://via.placeholder.com/300x400/999999/000000?text=Luxury+Item',
-                snippet: `Exclusive ${lowerSearchTerm} from our luxury collection. Handcrafted with premium materials.`,
-                displayLink: 'luxury-boutique.com',
-                price: '$299.99',
-                source: 'mock'
-            }
+        // Generate 20 mock results for better demo
+        const mockResults = [];
+        const stores = [
+            { name: 'Fashion Store', domain: 'example-fashion-store.com', price: '$89.99' },
+            { name: 'Designer Brand', domain: 'designer-brand.com', price: '$129.99' },
+            { name: 'Budget Fashion', domain: 'budget-fashion.com', price: '$39.99' },
+            { name: 'Luxury Boutique', domain: 'luxury-boutique.com', price: '$299.99' },
+            { name: 'Style Hub', domain: 'stylehub.com', price: '$79.99' },
+            { name: 'Trendy Wear', domain: 'trendywear.com', price: '$59.99' },
+            { name: 'Fashion Forward', domain: 'fashionforward.com', price: '$149.99' },
+            { name: 'Chic Collection', domain: 'chiccollection.com', price: '$199.99' },
+            { name: 'Urban Style', domain: 'urbanstyle.com', price: '$69.99' },
+            { name: 'Elite Fashion', domain: 'elitefashion.com', price: '$249.99' }
         ];
+
+        const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', 'F39C12', '8E44AD', '2ECC71', 'E74C3C'];
+
+        for (let i = 0; i < 20; i++) {
+            const store = stores[i % stores.length];
+            const color = colors[i % colors.length];
+
+            mockResults.push({
+                title: `${searchTerm} - ${store.name} Collection ${i + 1}`,
+                link: `https://${store.domain}/product/${i + 1}`,
+                image: `https://via.placeholder.com/300x400/${color}/FFFFFF?text=${encodeURIComponent(searchTerm)}+${i + 1}`,
+                snippet: `Premium ${lowerSearchTerm} from ${store.name}. High-quality materials and modern design. Available in multiple sizes.`,
+                displayLink: store.domain,
+                price: store.price,
+                source: 'mock'
+            });
+        }
+
+        return mockResults;
     }
 }
 
