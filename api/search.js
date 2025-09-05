@@ -32,18 +32,18 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Very specific search query - use exact terms only
-        const searchQuery = query; // Use the exact user query without extra terms
+        // Simple search query that was working
+        const searchQuery = `${query} clothing`;
 
         console.log(`🔍 API Debug - Original query: "${query}"`);
         console.log(`🔍 API Debug - Search query: "${searchQuery}"`);
         console.log(`🔍 API Debug - API Key: ${API_KEY ? API_KEY.substring(0, 10) + '...' : 'NOT SET'}`);
         console.log(`🔍 API Debug - Search Engine ID: ${CX ? CX : 'NOT SET'}`);
 
-        // Add image search parameters and get more results
+        // Simple working parameters - increase results to 10
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             searchQuery
-        )}&cx=${CX}&key=${API_KEY}&num=20&searchType=image&imgType=photo&imgSize=large&safe=active`;
+        )}&cx=${CX}&key=${API_KEY}&num=10&searchType=image&imgType=photo&imgSize=medium`;
 
         console.log(`🔍 API Debug - Testing with minimal URL`);
 
@@ -61,56 +61,18 @@ export default async function handler(req, res) {
             throw new Error(data.error?.message || 'Search API error');
         }
 
-        // Smart filtering to keep only highly relevant clothing items
-        const excludeKeywords = [
-            'bag', 'purse', 'handbag', 'wallet', 'clutch', 'tote', 'backpack',
-            'jewelry', 'watch', 'necklace', 'bracelet', 'ring', 'earring',
-            'shoe', 'boot', 'sneaker', 'sandal', 'heel', 'slipper',
-            'phone', 'case', 'cover', 'electronics', 'furniture', 'home',
-            'toy', 'doll', 'food', 'drink', 'book', 'poster', 'art', 'painting',
-            'hat', 'cap', 'sunglasses', 'belt', 'scarf', 'glove'
-        ];
-
-        // Extract key terms from the original query for relevance scoring
-        const queryTerms = query.toLowerCase().split(' ').filter(term => term.length > 2);
+        // Simple filtering - just remove obvious non-clothing items
+        const excludeKeywords = ['bag', 'purse', 'handbag', 'wallet', 'jewelry', 'watch', 'phone', 'case'];
 
         const items = (data.items || [])
             .filter(item => {
                 const titleLower = (item.title || '').toLowerCase();
                 const snippetLower = (item.snippet || '').toLowerCase();
-                const contextLower = (item.image?.contextLink || '').toLowerCase();
-                const combinedText = `${titleLower} ${snippetLower} ${contextLower}`;
+                const combinedText = `${titleLower} ${snippetLower}`;
 
-                // Filter out items with irrelevant keywords
-                const hasIrrelevantKeyword = excludeKeywords.some(keyword =>
-                    combinedText.includes(keyword)
-                );
-
-                // Check if the item contains key terms from the query
-                const relevanceScore = queryTerms.reduce((score, term) => {
-                    if (titleLower.includes(term)) score += 3; // Title match is most important
-                    if (snippetLower.includes(term)) score += 1;
-                    return score;
-                }, 0);
-
-                // Keep items that are relevant and don't have irrelevant keywords
-                return !hasIrrelevantKeyword && relevanceScore > 0;
+                // Filter out obvious non-clothing items
+                return !excludeKeywords.some(keyword => combinedText.includes(keyword));
             })
-            .sort((a, b) => {
-                // Sort by relevance - items with more query terms in title first
-                const aScore = queryTerms.reduce((score, term) => {
-                    if ((a.title || '').toLowerCase().includes(term)) score += 3;
-                    if ((a.snippet || '').toLowerCase().includes(term)) score += 1;
-                    return score;
-                }, 0);
-                const bScore = queryTerms.reduce((score, term) => {
-                    if ((b.title || '').toLowerCase().includes(term)) score += 3;
-                    if ((b.snippet || '').toLowerCase().includes(term)) score += 1;
-                    return score;
-                }, 0);
-                return bScore - aScore;
-            })
-            .slice(0, 15) // Take top 15 most relevant results
             .map(item => ({
                 title: item.title,
                 link: item.link, // This is the image URL for image search
