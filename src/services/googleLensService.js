@@ -147,8 +147,8 @@ class GoogleLensService {
         try {
             // Try backend proxy first (to avoid CORS issues)
 
-            // Enhanced query to focus on clothing and exclude irrelevant items
-            const enhancedQuery = `${query} clothing apparel fashion -bag -purse -jewelry -phone -furniture`;
+            // Use exact query for precise results
+            const enhancedQuery = query;
 
             console.log(`🔍 Searching with backend URL: ${this.backendUrl}`);
             console.log(`🔍 Enhanced query: ${enhancedQuery}`);
