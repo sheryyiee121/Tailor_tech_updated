@@ -32,18 +32,20 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Simplified search query to avoid "invalid argument" error
-        const searchQuery = `${query} clothing apparel`;
+        // Very basic search query for testing
+        const searchQuery = `clothing`;
 
-        console.log(`🔍 API Debug - Query: "${searchQuery}"`);
-        console.log(`🔍 API Debug - API Key: ${API_KEY ? 'SET' : 'NOT SET'}`);
-        console.log(`🔍 API Debug - Search Engine ID: ${CX ? 'SET' : 'NOT SET'}`);
+        console.log(`🔍 API Debug - Original query: "${query}"`);
+        console.log(`🔍 API Debug - Search query: "${searchQuery}"`);
+        console.log(`🔍 API Debug - API Key: ${API_KEY ? API_KEY.substring(0, 10) + '...' : 'NOT SET'}`);
+        console.log(`🔍 API Debug - Search Engine ID: ${CX ? CX : 'NOT SET'}`);
 
+        // Test with minimal parameters first
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             searchQuery
-        )}&cx=${CX}&searchType=image&imgType=photo&imgSize=large&key=${API_KEY}&num=20`;
+        )}&cx=${CX}&key=${API_KEY}&num=5`;
 
-        console.log(`🔍 API Debug - Full URL: ${url.replace(API_KEY, 'HIDDEN_API_KEY')}`);
+        console.log(`🔍 API Debug - Testing with minimal URL`);
 
         const response = await fetch(url);
         const data = await response.json();
@@ -51,36 +53,23 @@ export default async function handler(req, res) {
         console.log(`🔍 API Debug - Response Status: ${response.status}`);
         if (!response.ok) {
             console.error(`🔍 API Debug - Error Response:`, data);
+        } else {
+            console.log(`🔍 API Debug - Success! Found ${data.items?.length || 0} results`);
         }
 
         if (!response.ok) {
             throw new Error(data.error?.message || 'Search API error');
         }
 
-        // Filter out accessories from results
-        const accessoryKeywords = ['bag', 'purse', 'handbag', 'wallet', 'clutch', 'tote', 'satchel', 'backpack', 'pouch', 'accessory'];
-
-        const items = (data.items || [])
-            .filter(item => {
-                const titleLower = (item.title || '').toLowerCase();
-                const snippetLower = (item.snippet || '').toLowerCase();
-                const contextLower = (item.image?.contextLink || '').toLowerCase();
-
-                // Check if any accessory keyword is in the title, snippet, or context
-                return !accessoryKeywords.some(keyword =>
-                    titleLower.includes(keyword) ||
-                    snippetLower.includes(keyword) ||
-                    contextLower.includes(keyword)
-                );
-            })
-            .map(item => ({
-                title: item.title,
-                link: item.link,
-                displayLink: item.displayLink,
-                snippet: item.snippet,
-                thumbnail: item.image?.thumbnailLink,
-                context: item.image?.contextLink,
-            }));
+        // Return basic results without complex filtering for now
+        const items = (data.items || []).map(item => ({
+            title: item.title,
+            link: item.link,
+            displayLink: item.displayLink,
+            snippet: item.snippet,
+            thumbnail: item.image?.thumbnailLink,
+            context: item.image?.contextLink,
+        }));
 
         res.status(200).json({
             results: items,
