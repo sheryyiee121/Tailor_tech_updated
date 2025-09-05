@@ -32,18 +32,18 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Very basic search query for testing
-        const searchQuery = `clothing`;
+        // Use the actual query with clothing context
+        const searchQuery = `${query} clothing`;
 
         console.log(`🔍 API Debug - Original query: "${query}"`);
         console.log(`🔍 API Debug - Search query: "${searchQuery}"`);
         console.log(`🔍 API Debug - API Key: ${API_KEY ? API_KEY.substring(0, 10) + '...' : 'NOT SET'}`);
         console.log(`🔍 API Debug - Search Engine ID: ${CX ? CX : 'NOT SET'}`);
 
-        // Test with minimal parameters first
+        // Add image search parameters and increase results
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             searchQuery
-        )}&cx=${CX}&key=${API_KEY}&num=5`;
+        )}&cx=${CX}&key=${API_KEY}&num=10&searchType=image&imgType=photo&imgSize=medium`;
 
         console.log(`🔍 API Debug - Testing with minimal URL`);
 
@@ -61,14 +61,15 @@ export default async function handler(req, res) {
             throw new Error(data.error?.message || 'Search API error');
         }
 
-        // Return basic results without complex filtering for now
+        // Return results with proper image URLs
         const items = (data.items || []).map(item => ({
             title: item.title,
-            link: item.link,
+            link: item.link, // This is the image URL for image search
             displayLink: item.displayLink,
             snippet: item.snippet,
             thumbnail: item.image?.thumbnailLink,
-            context: item.image?.contextLink,
+            context: item.image?.contextLink, // This is the webpage where image was found
+            image: item.link, // Add image field for frontend
         }));
 
         res.status(200).json({

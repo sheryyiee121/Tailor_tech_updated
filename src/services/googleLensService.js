@@ -251,11 +251,11 @@ class GoogleLensService {
     formatCustomSearchResults(items) {
         return items.map(item => ({
             title: item.title || 'Fashion Item',
-            link: item.context || item.link || '#',
-            image: item.link || 'https://via.placeholder.com/300x400/cccccc/ffffff?text=Fashion+Item',
-            snippet: item.title || 'Fashion item found via Google Custom Search',
-            displayLink: this.extractDomain(item.context || item.link),
-            price: this.extractPrice(item.title || ''),
+            link: item.context || item.link || '#', // Website URL
+            image: item.image || item.link || 'https://via.placeholder.com/300x400/cccccc/ffffff?text=Fashion+Item', // Image URL
+            snippet: item.snippet || item.title || 'Fashion item found via Google Custom Search',
+            displayLink: this.extractDomain(item.context || item.displayLink),
+            price: this.extractPrice(item.snippet || item.title || ''),
             source: 'google_custom'
         }));
     }
