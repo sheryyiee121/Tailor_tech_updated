@@ -41,6 +41,10 @@ Create a `.env` file in your project root:
 ```env
 # Google Custom Search API (REQUIRED for search functionality)
 # Note: Vite uses VITE_ prefix instead of REACT_APP_
+
+
+
+
 VITE_GOOGLE_API_KEY=AIzaSyDBBrn9K5vt-TbBzslCBkn7OzBFA4ayZuI
 VITE_GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_from_step_2
 

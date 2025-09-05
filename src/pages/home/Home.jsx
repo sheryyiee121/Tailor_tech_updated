@@ -2,14 +2,14 @@ import Footer from "../../components/common/footer";
 import Navbar from "../../components/common/navbar";
 import BlogSection from "../../components/Hero/Blog";
 import Fashion from "../../components/Hero/Fashion";
-import Heroo from "../../components/Hero/Heroo";
+import HeroEnhanced from "../../components/Hero/HeroEnhanced";
 import TechnologySection from "../../components/Hero/Technology";
 
 function Home() {
   return (
     <>
       <Navbar />
-      <Heroo />
+      <HeroEnhanced />
       <BlogSection />
       <TechnologySection />
       <Fashion />

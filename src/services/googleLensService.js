@@ -4,12 +4,12 @@ import promptStorageService from './promptStorageService.js';
 class GoogleLensService {
     constructor() {
         // ScrapingDog API for Google Lens functionality
-        this.scrapingDogApiKey = '68ad90441e87f945fc84bf5f';
+        this.scrapingDogApiKey = import.meta.env.VITE_SCRAPINGDOG_API_KEY || '68ad90441e87f945fc84bf5f';
         this.scrapingDogBaseUrl = 'https://api.scrapingdog.com/google_lens';
 
         // Google Custom Search API with your credentials
-        this.googleApiKey = 'AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE';
-        this.searchEngineId = 'e7c5ff0f989d54294';
+        this.googleApiKey = import.meta.env.VITE_GOOGLE_API_KEY || 'AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE';
+        this.searchEngineId = import.meta.env.VITE_GOOGLE_SEARCH_ENGINE_ID || 'e7c5ff0f989d54294';
 
         // Backend proxy for Google Custom Search (to avoid CORS)
         // Auto-detect deployment platform

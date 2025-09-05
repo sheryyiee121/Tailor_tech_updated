@@ -1,6 +1,3 @@
-// Vercel Serverless Function for Google Custom Search API
-// This will be deployed as /api/search endpoint
-
 export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -11,13 +8,11 @@ export default async function handler(req, res) {
         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
     );
 
-    // Handle OPTIONS request
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
     }
 
-    // Only allow GET requests
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -25,46 +20,65 @@ export default async function handler(req, res) {
     const { q: query } = req.query;
 
     if (!query) {
-        return res.status(400).json({ error: "Query parameter 'q' is required" });
+        return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    // Your Google Custom Search API credentials
-    const API_KEY = "AIzaSyDNlPNS_UMqX0_ybLElA2X22WlKa17kaOE";
-    const CX = "e7c5ff0f989d54294";
+    const API_KEY = process.env.GOOGLE_API_KEY || process.env.VITE_GOOGLE_API_KEY;
+    const CX = process.env.GOOGLE_SEARCH_ENGINE_ID || process.env.VITE_GOOGLE_SEARCH_ENGINE_ID;
+
+    if (!API_KEY || !CX) {
+        console.error('Missing API credentials');
+        return res.status(500).json({ error: 'Search service is not configured' });
+    }
 
     try {
+        // Add clothing-specific search parameters
+        const searchQuery = `${query} -bag -purse -handbag -wallet -accessory clothing wear apparel outfit jacket shirt dress`;
+
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
-            query
-        )}&cx=${CX}&searchType=image&key=${API_KEY}`;
+            searchQuery
+        )}&cx=${CX}&searchType=image&imgType=photo&imgSize=large&key=${API_KEY}&num=10`;
 
         const response = await fetch(url);
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('Google API Error:', data);
-            return res.status(500).json({
-                error: 'Failed to fetch from Google Custom Search API',
-                details: data.error?.message || 'Unknown error'
-            });
+            throw new Error(data.error?.message || 'Search API error');
         }
 
-        const items = data.items?.map(item => ({
-            title: item.title,
-            link: item.link, // image URL
-            context: item.image?.contextLink || item.link, // where it came from
-            snippet: item.snippet,
-            displayLink: item.displayLink
-        })) || [];
+        // Filter out accessories from results
+        const accessoryKeywords = ['bag', 'purse', 'handbag', 'wallet', 'clutch', 'tote', 'satchel', 'backpack', 'pouch', 'accessory'];
 
-        return res.status(200).json({
-            success: true,
+        const items = (data.items || [])
+            .filter(item => {
+                const titleLower = (item.title || '').toLowerCase();
+                const snippetLower = (item.snippet || '').toLowerCase();
+                const contextLower = (item.image?.contextLink || '').toLowerCase();
+
+                // Check if any accessory keyword is in the title, snippet, or context
+                return !accessoryKeywords.some(keyword =>
+                    titleLower.includes(keyword) ||
+                    snippetLower.includes(keyword) ||
+                    contextLower.includes(keyword)
+                );
+            })
+            .map(item => ({
+                title: item.title,
+                link: item.link,
+                displayLink: item.displayLink,
+                snippet: item.snippet,
+                thumbnail: item.image?.thumbnailLink,
+                context: item.image?.contextLink,
+            }));
+
+        res.status(200).json({
             results: items,
-            totalResults: data.searchInformation?.totalResults || 0
+            searchInformation: data.searchInformation
         });
     } catch (error) {
-        console.error('Error fetching from Google Custom Search API:', error);
-        return res.status(500).json({
-            error: 'Failed to fetch results from Google Custom Search API',
+        console.error('Search error:', error);
+        res.status(500).json({
+            error: 'Failed to fetch search results',
             details: error.message
         });
     }
