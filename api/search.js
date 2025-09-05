@@ -32,15 +32,26 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Add clothing-specific search parameters
-        const searchQuery = `${query} -bag -purse -handbag -wallet -accessory clothing wear apparel outfit jacket shirt dress`;
+        // Simplified search query to avoid "invalid argument" error
+        const searchQuery = `${query} clothing apparel`;
+
+        console.log(`🔍 API Debug - Query: "${searchQuery}"`);
+        console.log(`🔍 API Debug - API Key: ${API_KEY ? 'SET' : 'NOT SET'}`);
+        console.log(`🔍 API Debug - Search Engine ID: ${CX ? 'SET' : 'NOT SET'}`);
 
         const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
             searchQuery
         )}&cx=${CX}&searchType=image&imgType=photo&imgSize=large&key=${API_KEY}&num=20`;
 
+        console.log(`🔍 API Debug - Full URL: ${url.replace(API_KEY, 'HIDDEN_API_KEY')}`);
+
         const response = await fetch(url);
         const data = await response.json();
+
+        console.log(`🔍 API Debug - Response Status: ${response.status}`);
+        if (!response.ok) {
+            console.error(`🔍 API Debug - Error Response:`, data);
+        }
 
         if (!response.ok) {
             throw new Error(data.error?.message || 'Search API error');
