@@ -32,8 +32,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Use the actual query with clothing context
-        const searchQuery = `${query} clothing`;
+        // Enhanced search query to focus on clothing and exclude irrelevant items
+        const searchQuery = `${query} clothing apparel fashion -bag -purse -jewelry -phone -furniture`;
 
         console.log(`🔍 API Debug - Original query: "${query}"`);
         console.log(`🔍 API Debug - Search query: "${searchQuery}"`);
@@ -61,16 +61,38 @@ export default async function handler(req, res) {
             throw new Error(data.error?.message || 'Search API error');
         }
 
-        // Return results with proper image URLs
-        const items = (data.items || []).map(item => ({
-            title: item.title,
-            link: item.link, // This is the image URL for image search
-            displayLink: item.displayLink,
-            snippet: item.snippet,
-            thumbnail: item.image?.thumbnailLink,
-            context: item.image?.contextLink, // This is the webpage where image was found
-            image: item.link, // Add image field for frontend
-        }));
+        // Filter out irrelevant results and return with proper image URLs
+        const excludeKeywords = [
+            'bag', 'purse', 'handbag', 'wallet', 'clutch', 'tote', 'backpack',
+            'jewelry', 'watch', 'necklace', 'bracelet', 'ring', 'earring',
+            'shoe', 'boot', 'sneaker', 'sandal', 'heel',
+            'phone', 'case', 'cover', 'electronics', 'furniture', 'home',
+            'toy', 'doll', 'food', 'drink', 'book', 'poster', 'art'
+        ];
+
+        const items = (data.items || [])
+            .filter(item => {
+                const titleLower = (item.title || '').toLowerCase();
+                const snippetLower = (item.snippet || '').toLowerCase();
+                const contextLower = (item.image?.contextLink || '').toLowerCase();
+                const combinedText = `${titleLower} ${snippetLower} ${contextLower}`;
+
+                // Filter out items with irrelevant keywords
+                const hasIrrelevantKeyword = excludeKeywords.some(keyword =>
+                    combinedText.includes(keyword)
+                );
+
+                return !hasIrrelevantKeyword;
+            })
+            .map(item => ({
+                title: item.title,
+                link: item.link, // This is the image URL for image search
+                displayLink: item.displayLink,
+                snippet: item.snippet,
+                thumbnail: item.image?.thumbnailLink,
+                context: item.image?.contextLink, // This is the webpage where image was found
+                image: item.link, // Add image field for frontend
+            }));
 
         res.status(200).json({
             results: items,
