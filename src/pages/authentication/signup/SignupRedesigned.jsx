@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../hooks/useAuth';
+import { updateProfile } from 'firebase/auth';
 import {
     Sparkles,
     Mail,
@@ -18,7 +19,7 @@ import {
 
 const SignupRedesigned = () => {
     const navigate = useNavigate();
-    const { signInWithGoogle } = useAuth();
+    const { signInWithGoogle, signUpWithEmail } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -51,6 +52,7 @@ const SignupRedesigned = () => {
         setError('');
         setIsLoading(true);
 
+        // Client-side validation
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match.");
             setIsLoading(false);
@@ -63,14 +65,43 @@ const SignupRedesigned = () => {
             return;
         }
 
-        // Simulate signup success for now
-        setTimeout(() => {
-            setMessage("Account created successfully! Redirecting...");
+        if (!formData.name.trim()) {
+            setError("Please enter your full name.");
             setIsLoading(false);
-            setTimeout(() => {
-                navigate("/dashboard");
-            }, 1500);
-        }, 2000);
+            return;
+        }
+
+        try {
+            // Create Firebase account with email and password
+            const result = await signUpWithEmail(formData.email, formData.password);
+
+            if (result.success) {
+                setMessage("Account created successfully! Redirecting...");
+
+                // Update user profile with display name
+                if (result.user && formData.name.trim()) {
+                    try {
+                        await updateProfile(result.user, {
+                            displayName: formData.name.trim()
+                        });
+                        console.log('Display name updated successfully');
+                    } catch (profileError) {
+                        console.warn('Failed to update display name:', profileError);
+                    }
+                }
+
+                setTimeout(() => {
+                    navigate("/dashboard");
+                }, 1500);
+            } else {
+                setError(result.error || "Account creation failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Unexpected error during signup:", error);
+            setError("An unexpected error occurred. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleGoogleSignUp = async () => {
@@ -269,20 +300,20 @@ const SignupRedesigned = () => {
                         </div>
 
                         {/* Terms Checkbox */}
-                        <div className="flex items-start">
+                        <div className="flex items-start gap-3">
                             <input
                                 type="checkbox"
                                 id="terms"
                                 required
-                                className="mt-1 w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
+                                className="mt-1 w-4 h-4 text-gray-900 bg-gray-50 border-2 border-gray-300 rounded focus:ring-2 focus:ring-gray-900 focus:border-gray-900 checked:bg-gray-900 checked:border-gray-900"
                             />
-                            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+                            <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
                                 I agree to the{" "}
-                                <Link to="#" className="text-gray-900 hover:text-gray-700 font-medium underline">
+                                <Link to="#" className="text-gray-900 hover:text-gray-700 font-semibold underline decoration-2 underline-offset-2">
                                     Terms of Service
                                 </Link>{" "}
                                 and{" "}
-                                <Link to="#" className="text-gray-900 hover:text-gray-700 font-medium underline">
+                                <Link to="#" className="text-gray-900 hover:text-gray-700 font-semibold underline decoration-2 underline-offset-2">
                                     Privacy Policy
                                 </Link>
                             </label>

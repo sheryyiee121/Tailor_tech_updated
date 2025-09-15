@@ -1,151 +1,272 @@
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, X, Sparkles, ChevronDown, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const menuItems = [
     {
       title: "Solutions",
       subItems: [
-        { name: "Enterprise Suite", href: "/solutions/enterprise" },
-        { name: "Small Business", href: "/solutions/small-business" },
+        {
+          name: "Enterprise Suite",
+          href: "/solutions/enterprise",
+          description: "Advanced AI tools for large businesses"
+        },
+        {
+          name: "Small Business",
+          href: "/solutions/small-business",
+          description: "Affordable solutions for growing teams"
+        },
       ],
     },
     {
       title: "Use Cases",
       subItems: [
-        { name: "E-commerce", href: "/use-cases/ecommerce" },
-        { name: "Education", href: "/use-cases/education" },
+        {
+          name: "E-commerce",
+          href: "/use-cases/ecommerce",
+          description: "Boost online fashion sales"
+        },
+        {
+          name: "Education",
+          href: "/use-cases/education",
+          description: "Learn fashion design with AI"
+        },
       ],
     },
     {
       title: "Pricing",
-      subItems: [{ name: "Plans", href: "/pricing" }],
+      subItems: [
+        {
+          name: "Plans",
+          href: "/pricing",
+          description: "Choose the perfect plan"
+        }
+      ],
     },
-
     {
       title: "About",
-      subItems: [{ name: "Our Team", href: "/about/team" }],
+      subItems: [
+        {
+          name: "Our Team",
+          href: "/about/team",
+          description: "Meet the minds behind TailorTech"
+        }
+      ],
     },
   ];
 
+  const handleDropdownEnter = (index) => {
+    setActiveDropdown(index);
+  };
+
+  const handleDropdownLeave = () => {
+    setActiveDropdown(null);
+  };
+
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full bg-white z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          {/* Logo - Leftmost Corner */}
-          <div className="flex-shrink-0">
-            <Link to="/">
-              <h1 className="text-2xl font-semibold text-gray-900 transition-all duration-300 ease-in-out hover:text-gray-700 cursor-pointer">
-                Tailor Tech
-              </h1>
-            </Link>
-          </div>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${isScrolled
+          ? "bg-white/95 backdrop-blur-xl shadow-xl border-b border-gray-100/50"
+          : "bg-white/90 backdrop-blur-md"
+          }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
 
-          {/* Center Menu for Desktop */}
-          <div className="hidden lg:flex flex-grow justify-center">
-            <div className="flex space-x-10">
+            {/* Premium Logo */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex-shrink-0"
+            >
+              <Link to="/" className="flex items-center group">
+                <div className="relative">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
+                </div>
+                <div className="ml-3">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
+                    TailorTech
+                  </h1>
+                  <p className="text-xs text-gray-500 font-medium tracking-wider uppercase">
+                    AI Fashion Studio
+                  </p>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-1">
               {menuItems.map((item, index) => (
-                <div key={index} className="relative group">
-                  <a
-                    href="#"
-                    className="text-gray-600 text-sm font-medium uppercase tracking-wide hover:text-gray-900 transition-all duration-300 ease-in-out flex items-center"
-                  >
-                    {item.title}
-                    <span className="ml-1 transition-transform duration-300 ease-in-out group-hover:-rotate-180">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                <div
+                  key={index}
+                  className="relative"
+                  onMouseEnter={() => handleDropdownEnter(index)}
+                  onMouseLeave={handleDropdownLeave}
+                >
+                  <button className="flex items-center px-4 py-2 text-gray-700 font-medium hover:text-gray-900 transition-all duration-300 rounded-lg hover:bg-gray-50 group">
+                    <span className="relative">
+                      {item.title}
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 group-hover:w-full transition-all duration-300" />
                     </span>
-                  </a>
-                  <div className="absolute top-full left-0 w-48 pt-3 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-300 ease-in-out transform -translate-y-2 group-hover:translate-y-0">
-                    <div className="bg-white rounded-md shadow-lg border border-gray-100 py-2">
+                    <ChevronDown className={`ml-1 w-4 h-4 transition-transform duration-300 ${activeDropdown === index ? "rotate-180" : ""
+                      }`} />
+                  </button>
+
+                  {/* Premium Dropdown */}
+                  <AnimatePresence>
+                    {activeDropdown === index && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100/50 overflow-hidden"
+                      >
+                        <div className="p-2">
+                          {item.subItems.map((subItem, subIndex) => (
+                            <Link
+                              key={subIndex}
+                              to={subItem.href}
+                              className="flex items-start p-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300 group"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
+                                    {subItem.name}
+                                  </h4>
+                                  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300" />
+                                </div>
+                                <p className="text-sm text-gray-500 mt-1 group-hover:text-gray-600">
+                                  {subItem.description}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+
+            {/* Premium CTA Button */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <Link to="/signin">
+                <button className="px-4 py-2 text-gray-700 font-medium hover:text-gray-900 transition-all duration-300">
+                  Sign In
+                </button>
+              </Link>
+              <Link to="/signup">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
+                  <span className="relative z-10 flex items-center">
+                    Get Started
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-pink-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.button>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors duration-300"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              <div className="relative w-6 h-6">
+                <span className={`absolute block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isOpen ? "top-3 rotate-45" : "top-1"
+                  }`} />
+                <span className={`absolute block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isOpen ? "opacity-0" : "top-3"
+                  }`} />
+                <span className={`absolute block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isOpen ? "top-3 -rotate-45" : "top-5"
+                  }`} />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100/50"
+            >
+              <div className="px-4 py-6 space-y-4">
+                {menuItems.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      {item.title}
+                    </h3>
+                    <div className="pl-4 space-y-2">
                       {item.subItems.map((subItem, subIndex) => (
                         <Link
                           key={subIndex}
                           to={subItem.href}
-                          className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 ease-in-out"
+                          className="block py-2 text-gray-600 hover:text-purple-600 transition-colors duration-300"
+                          onClick={() => setIsOpen(false)}
                         >
-                          {subItem.name}
+                          <div>
+                            <div className="font-medium">{subItem.name}</div>
+                            <div className="text-sm text-gray-500">{subItem.description}</div>
+                          </div>
                         </Link>
                       ))}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
 
-          {/* Let's Talk Button - Rightmost Corner */}
-          <div className="hidden lg:block flex-shrink-0">
-            <Link to={'/signup'} >
-              <button className="bg-gray-700 text-white px-6 py-2 rounded-full text-sm font-medium uppercase tracking-wide transition-all duration-300 ease-in-out hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                Get Started
-              </button>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden text-gray-900 focus:outline-none"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? (
-              <X size={24} className="transition-all duration-300 rotate-90" />
-            ) : (
-              <Menu size={24} className="transition-all duration-300" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        <div
-          className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-            }`}
-        >
-          <div className="bg-white px-4 sm:px-6 py-6 space-y-6 border-t border-gray-100">
-            {menuItems.map((item, index) => (
-              <div key={index} className="w-full">
-                <a
-                  href="#"
-                  className="block text-gray-900 font-medium text-base hover:text-gray-700 transition-all duration-300 py-2"
-                >
-                  {item.title}
-                </a>
-                <div className="ml-4 space-y-2">
-                  {item.subItems.map((subItem, subIndex) => (
-                    <Link
-                      key={subIndex}
-                      to={subItem.href}
-                      className="block text-gray-600 hover:text-gray-900 transition-all duration-200 text-sm py-1.5"
-                    >
-                      {subItem.name}
-                    </Link>
-                  ))}
+                <div className="pt-4 border-t border-gray-100 space-y-3">
+                  <Link to="/signin" onClick={() => setIsOpen(false)}>
+                    <button className="w-full py-3 text-gray-700 font-medium hover:text-gray-900 transition-colors duration-300 text-center">
+                      Sign In
+                    </button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    <button className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                      Get Started
+                    </button>
+                  </Link>
                 </div>
               </div>
-            ))}
-            <Link to={'/signup'}>
-              <button className="w-full bg-gray-700 text-white px-6 py-3 rounded-full font-medium uppercase tracking-wide transition-all duration-300 ease-in-out hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                Get Started
-              </button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-      <div className="h-16 lg:h-20"></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
+
+      {/* Spacer */}
+      <div className="h-20" />
     </>
   );
 };

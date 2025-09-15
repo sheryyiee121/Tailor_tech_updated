@@ -83,23 +83,30 @@ const Texture = ({ onTextureSelect }) => {
 
   const handleNext = () => {
     if (selectedImage) {
+      const textureData = {
+        texture: selectedImage,
+        prompt: prompt,
+        isAIGenerated: false
+      };
       if (onTextureSelect) {
-        onTextureSelect(selectedImage);
+        onTextureSelect(textureData);
       }
-      navigate("/model", { state: { prompt, texture: selectedImage } });
+      navigate("/model", { state: textureData });
     }
   };
 
   const handleUseAIDesign = () => {
     if (generatedDesign) {
+      const textureData = {
+        texture: generatedDesign.generatedImage,
+        prompt: prompt || generatedDesign.prompt,
+        isAIGenerated: true
+      };
+      if (onTextureSelect) {
+        onTextureSelect(textureData);
+      }
       // Navigate to model page with AI-generated design
-      navigate("/model", {
-        state: {
-          prompt,
-          texture: generatedDesign.generatedImage,
-          isAIGenerated: true
-        }
-      });
+      navigate("/model", { state: textureData });
     }
   };
 

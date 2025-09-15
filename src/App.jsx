@@ -13,6 +13,8 @@ import Model from "./pages/model/model";
 import Animation from "./pages/model/animation";
 import SearchResults from "./pages/search/SearchResults";
 import CustomOrderFixed from "./pages/order/CustomOrderFixed";
+import OutfitPreview from "./pages/outfit/OutfitPreview";
+import TailorBot from "./components/Chatbot/TailorBot";
 
 // Solutions Pages
 import EnterpriseSuite from "./pages/solutions/EnterpriseSuite";
@@ -68,6 +70,14 @@ function App() {
             }
           />
           <Route
+            path="/outfit-preview"
+            element={
+              <PrivateRoute>
+                <OutfitPreview />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/animation"
             element={
               <PrivateRoute>
@@ -106,6 +116,9 @@ function App() {
           {/* Public Pages - About */}
           <Route path="/about/team" element={<OurTeam />} />
         </Routes>
+
+        {/* Global Chatbot - Available on all pages */}
+        <TailorBot />
       </Router>
     </AuthContextProvider>
   );

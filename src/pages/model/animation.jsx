@@ -72,18 +72,35 @@ const DiscoLights = () => {
   );
 };
 
-// Model3D Component (with slowest walking speed)
-const Model3D = ({ isAnimating }) => {
+// Model3D Component (with outfit texture support)
+const Model3D = ({ isAnimating, outfitTexture, fabric }) => {
   const group = useRef();
   const { scene: girlScene, animations } = useGLTF("/models/er.glb");
-  const { scene: spotlightScene } = useGLTF("/models/spotlight.glb"); // Load the spotlight model
+  const { scene: spotlightScene } = useGLTF("/models/spotlight.glb");
   const { actions } = useAnimations(animations, group);
   const direction = useRef(1);
+
+  // Apply outfit texture if provided
+  useEffect(() => {
+    if (outfitTexture && girlScene) {
+      const loadOutfit = async () => {
+        try {
+          const { default: outfitMappingService } = await import('../../services/outfitMappingService');
+          const material = await outfitMappingService.createOutfitMaterial(outfitTexture, fabric || 'Cotton');
+          outfitMappingService.applyOutfitToModel(girlScene, material, 'full');
+        } catch (error) {
+          console.error('Failed to apply outfit:', error);
+        }
+      };
+      loadOutfit();
+    }
+  }, [outfitTexture, fabric, girlScene]);
 
   useEffect(() => {
     const walkAction = actions["mixamo.com"] || actions[animations[0]?.name];
     if (walkAction) {
       walkAction.reset().fadeIn(0.8).play();
+      walkAction.timeScale = 0.8; // Slightly slower walk
       if (!isAnimating) walkAction.paused = true;
     }
     return () => {
@@ -93,18 +110,28 @@ const Model3D = ({ isAnimating }) => {
 
   useFrame((_, delta) => {
     if (group.current && isAnimating) {
-      group.current.position.z += direction.current * delta * 0.02; // Slowest speed (reduced from 0.1 to 0.02)
-      if (group.current.position.z < -5 || group.current.position.z > 5) {
-        direction.current *= -1;
-        group.current.rotation.y += Math.PI;
+      // Walk forward (negative z direction)
+      group.current.position.z -= direction.current * delta * 1.5; // Walking towards camera
+
+      // Turn around at the ends of the runway
+      if (group.current.position.z < -10) {
+        // Reached front, turn around
+        group.current.position.z = -10;
+        direction.current = -1;
+        group.current.rotation.y = Math.PI; // Face backwards
+      } else if (group.current.position.z > 10) {
+        // Reached back, turn around
+        group.current.position.z = 10;
+        direction.current = 1;
+        group.current.rotation.y = 0; // Face forward
       }
     }
   });
 
   return (
-    <group ref={group} position={[0, 0, 5]}>
-      <primitive object={girlScene} scale={2} />
-      <primitive object={spotlightScene} scale={0.5} position={[-1, 3, 0]} /> {/* Spotlight position unchanged */}
+    <group ref={group} position={[0, 0, 10]} rotation={[0, 0, 0]}>
+      <primitive object={girlScene} scale={2.2} />
+      <primitive object={spotlightScene} scale={0.6} position={[-1, 4.5, 0]} />
     </group>
   );
 };
@@ -121,7 +148,7 @@ const WalkCanvas = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { prompt, texture, gender, mannequinSize } = location.state || {};
+  const { prompt, texture, gender, mannequinSize, selectedFabric, outfitApplied } = location.state || {};
 
   // Auto-stop animation after 30 seconds and show search options
   useEffect(() => {
@@ -198,28 +225,75 @@ const WalkCanvas = () => {
   };
 
   return (
-    <div
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-black"
-    >
-      {/* Design Info */}
+    <div className="relative w-full h-screen bg-gradient-to-b from-gray-800 via-gray-900 to-black overflow-hidden">
+      {/* Header Bar */}
+      <div className="absolute top-0 left-0 right-0 z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-white">Fashion Runway</h1>
+            {outfitApplied && (
+              <span className="text-sm text-green-400 flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                Outfit Applied
+              </span>
+            )}
+          </div>
+
+          {/* Control Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsAnimating(!isAnimating)}
+              className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 ${isAnimating
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-green-500 hover:bg-green-600 text-white'
+                }`}
+            >
+              {isAnimating ? 'Pause' : 'Start'} Show
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all duration-300"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Design Info Panel */}
       {prompt && (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-sm rounded-lg p-4 max-w-sm"
+          className="absolute top-24 left-6 z-10 bg-black/70 backdrop-blur-md rounded-xl p-5 max-w-sm border border-white/10"
         >
-          <h3 className="text-white font-semibold mb-2">Current Design:</h3>
-          <p className="text-gray-300 text-sm">"{prompt}"</p>
-          {texture && (
-            <div className="mt-3">
-              <img
-                src={texture}
-                alt="Design texture"
-                className="w-16 h-16 object-cover rounded-lg border border-white/20"
-              />
+          <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+            <span className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-sm">✨</span>
+            Design Details
+          </h3>
+          <div className="space-y-3">
+            <div>
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Prompt</p>
+              <p className="text-white text-sm">"{prompt}"</p>
             </div>
-          )}
+            {texture && (
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Preview</p>
+                <img
+                  src={texture}
+                  alt="Design texture"
+                  className="w-24 h-24 object-cover rounded-lg border border-white/20"
+                />
+              </div>
+            )}
+            {selectedFabric && (
+              <div>
+                <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Fabric</p>
+                <p className="text-white text-sm">{selectedFabric}</p>
+              </div>
+            )}
+          </div>
 
           {/* Saved Prompt Status */}
           <div className="mt-3 pt-3 border-t border-white/20">
@@ -282,87 +356,80 @@ const WalkCanvas = () => {
         </motion.div>
       )}
 
-      {/* Control Buttons */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-4">
-        <button
-          onClick={() => setIsAnimating(true)}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
-        >
-          Start
-        </button>
-        <button
-          onClick={() => setIsAnimating(false)}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-        >
-          Stop
-        </button>
-      </div>
 
-      {/* Animation Status */}
+      {/* Animation Status Badge */}
       {isAnimating && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="absolute top-4 right-4 z-10 bg-green-500/20 backdrop-blur-sm rounded-lg p-3 border border-green-400/30"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="absolute top-24 right-6 z-10"
         >
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-green-300 text-sm font-medium">Animation Running</span>
+          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md rounded-full px-4 py-2 border border-purple-400/30 flex items-center gap-2">
+            <div className="relative">
+              <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 w-3 h-3 bg-purple-400 rounded-full animate-ping"></div>
+            </div>
+            <span className="text-purple-200 text-sm font-medium">Live Show</span>
           </div>
         </motion.div>
       )}
 
-      {/* Action Buttons - Always Visible */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-        <div className="flex flex-col items-center space-y-4">
-          {/* Instructions */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="text-white/70 text-sm text-center"
-          >
-            Love this design? Find similar items or order a custom piece!
-          </motion.p>
+      {/* Side Action Panel */}
+      <motion.div
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="absolute right-6 top-1/2 -translate-y-1/2 z-10"
+      >
+        <div className="bg-black/70 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+          {/* Title */}
+          <h3 className="text-white font-semibold text-lg mb-4 text-center">
+            Next Steps
+          </h3>
 
-          {/* Buttons */}
-          <div className="flex flex-wrap gap-4 justify-center">
+          {/* Instructions */}
+          <p className="text-white/70 text-sm text-center mb-6 max-w-xs">
+            Love this design? Choose an option below
+          </p>
+
+          {/* Buttons - Vertical Stack */}
+          <div className="space-y-3">
             <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 1 }}
               onClick={handleSearchSimilar}
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all duration-300 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:scale-105"
             >
-              <Search className="w-5 h-5 mr-2" />
-              Find This Design
+              <Search className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+              Find Similar Items
             </motion.button>
 
             <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 1.1 }}
               onClick={handleImageUploadClick}
-              className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all duration-300 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="group w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:scale-105"
             >
-              <Upload className="w-5 h-5 mr-2" />
+              <Upload className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
               Upload & Search
             </motion.button>
 
             <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 1.2 }}
               onClick={handleCustomOrder}
-              className="px-6 py-3 bg-white hover:bg-gray-100 text-black rounded-lg font-semibold transition-all duration-300 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="group w-full px-6 py-4 bg-white hover:bg-gray-100 text-black rounded-xl font-semibold transition-all duration-300 flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:scale-105 border border-gray-200"
             >
-              <Package className="w-5 h-5 mr-2" />
-              Custom Order
+              <Package className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+              Order Custom
             </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Image Upload Modal */}
       {showImageUpload && (
@@ -458,58 +525,143 @@ const WalkCanvas = () => {
           </motion.div>
         </div>
       )}
-      <Canvas
-        shadows
-        camera={{ position: [0, 3, 10], fov: 50 }}
-        className="w-full h-full"
-      >
-        <ambientLight intensity={2} />
-        <spotLight
-          position={[0, 10, 0]}
-          angle={0.7}
-          penumbra={0.5}
-          intensity={3}
-          castShadow
-          target-position={[0, 0, 0]}
-        />
-        <directionalLight
-          position={[0, 5, 10]}
-          intensity={2}
-          castShadow
-        />
-        {/* Additional spotlights targeting her face */}
-        <spotLight
-          position={[2, 5, 8]}
-          angle={0.3}
-          penumbra={0.5}
-          intensity={2}
-          castShadow
-          target-position={[0, 1.5, 0]} // Targeting her face (approx. height)
-        />
-        <spotLight
-          position={[-2, 5, 8]}
-          angle={0.3}
-          penumbra={0.5}
-          intensity={2}
-          castShadow
-          target-position={[0, 1.5, 0]} // Targeting her face (approx. height)
-        />
-        {/* Back corner lights */}
-        <pointLight position={[5, 2, -5]} color="#ffffff" intensity={1.5} distance={10} />
-        <pointLight position={[-5, 2, -5]} color="#ffffff" intensity={1.5} distance={10} />
-        <mesh
-          position={[0, 0, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          receiveShadow
+      {/* 3D Canvas */}
+      <div className="absolute inset-0">
+        <Canvas
+          shadows
+          dpr={[1, 2]}
+          camera={{ position: [0, 2, 12], fov: 45 }}
+          className="w-full h-full"
+          gl={{
+            antialias: true,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.5
+          }}
         >
-          <planeGeometry args={[5, 10]} />
-          <meshStandardMaterial color="#666" />
-        </mesh>
-        <Model3D isAnimating={isAnimating} />
-        <RampMusic isPlaying={isAnimating} />
-        <DiscoLights /> {/* Add the disco lights */}
-        <OrbitControls />
-      </Canvas>
+          {/* Fog for depth */}
+          <fog attach="fog" args={['#1a1a1a', 15, 30]} />
+
+          {/* Lighting Setup */}
+          <ambientLight intensity={0.8} />
+          {/* Key Light - Main overhead */}
+          <spotLight
+            position={[0, 15, 5]}
+            angle={0.8}
+            penumbra={0.5}
+            intensity={3}
+            castShadow
+            shadow-mapSize={[2048, 2048]}
+            shadow-bias={-0.0001}
+            color="#ffffff"
+            target-position={[0, 0, 0]}
+          />
+
+          {/* Fill Light - Front */}
+          <directionalLight
+            position={[5, 10, 15]}
+            intensity={1.5}
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+            color="#ffffff"
+          />
+
+          {/* Additional front light for visibility */}
+          <pointLight
+            position={[0, 5, 10]}
+            intensity={2}
+            color="#ffffff"
+            distance={20}
+          />
+          {/* Rim Lights - Brighter */}
+          <spotLight
+            position={[4, 8, -5]}
+            angle={0.4}
+            penumbra={0.3}
+            intensity={2}
+            color="#ffffff"
+            target-position={[0, 2, 0]}
+          />
+          <spotLight
+            position={[-4, 8, -5]}
+            angle={0.4}
+            penumbra={0.3}
+            intensity={2}
+            color="#ffffff"
+            target-position={[0, 2, 0]}
+          />
+
+          {/* Floor bounce lights */}
+          <pointLight position={[3, 1, 5]} color="#ffffff" intensity={1} distance={10} />
+          <pointLight position={[-3, 1, 5]} color="#ffffff" intensity={1} distance={10} />
+          {/* Runway Floor - Raised and brighter */}
+          <mesh
+            position={[0, 0, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            receiveShadow
+          >
+            <planeGeometry args={[10, 25]} />
+            <meshStandardMaterial
+              color="#3a3a3a"
+              roughness={0.7}
+              metalness={0.3}
+              envMapIntensity={0.3}
+            />
+          </mesh>
+
+          {/* Runway Center Line */}
+          <mesh
+            position={[0, 0.01, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[0.3, 25]} />
+            <meshStandardMaterial
+              color="#cccccc"
+              emissive="#ffffff"
+              emissiveIntensity={0.1}
+            />
+          </mesh>
+
+          {/* Side runway lights */}
+          {[-4, 4].map((x, i) => (
+            <group key={i}>
+              {[...Array(5)].map((_, j) => (
+                <mesh key={j} position={[x, 0.02, -10 + j * 5]}>
+                  <cylinderGeometry args={[0.1, 0.1, 0.05, 16]} />
+                  <meshStandardMaterial
+                    color="#ffff00"
+                    emissive="#ffff00"
+                    emissiveIntensity={0.5}
+                  />
+                </mesh>
+              ))}
+            </group>
+          ))}
+          {/* 3D Model */}
+          <Model3D
+            isAnimating={isAnimating}
+            outfitTexture={outfitApplied ? texture : null}
+            fabric={selectedFabric}
+          />
+
+          {/* Audio */}
+          <RampMusic isPlaying={isAnimating} />
+
+          {/* Disco Lights */}
+          <DiscoLights />
+
+          {/* Camera Controls */}
+          <OrbitControls
+            enablePan={false}
+            enableZoom={true}
+            minDistance={8}
+            maxDistance={20}
+            minPolarAngle={Math.PI / 4}
+            maxPolarAngle={Math.PI / 2}
+            autoRotate={false}
+            autoRotateSpeed={0.5}
+          />
+        </Canvas>
+      </div>
     </div>
   );
 };

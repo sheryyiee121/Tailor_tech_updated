@@ -23,11 +23,14 @@ const Model = ({ selectedTexture }) => {
 
   const handleNext = () => {
     if (gender && (mannequinSize || customMannequin)) {
-      navigate("/animation", {
+      // Navigate to outfit preview page first
+      navigate("/outfit-preview", {
         state: {
           gender,
           mannequinSize,
-          texture: selectedTexture,
+          texture: selectedTexture?.texture || selectedTexture,
+          generatedImage: selectedTexture?.texture || selectedTexture,
+          prompt: selectedTexture?.prompt,
           customMannequin,
           userMeasurements
         },

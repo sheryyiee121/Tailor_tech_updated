@@ -32,26 +32,26 @@ const HeroEnhanced = () => {
         }
     ];
 
-    const testimonials = [
+    const teamMembers = [
         {
-            name: "Sarah Chen",
-            role: "Fashion Designer",
-            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-            quote: "TailorTech revolutionized my design process. What used to take days now takes minutes!",
-            rating: 5
-        },
-        {
-            name: "Marcus Johnson",
-            role: "Boutique Owner",
+            name: "Muhammad Sheraz",
+            role: "CEO & Founder",
             image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-            quote: "The 3D visualization helps my customers see exactly what they're getting. Sales up 40%!",
+            quote: "Leading the revolution in AI-powered fashion design with cutting-edge technology.",
             rating: 5
         },
         {
-            name: "Emily Zhang",
-            role: "E-commerce Manager",
-            image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-            quote: "Virtual try-on reduced our return rate by 60%. Game changer for online fashion!",
+            name: "Sheeza Ijaz",
+            role: "CTO & Co-Founder",
+            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+            quote: "Developing innovative 3D visualization and AI algorithms for the fashion industry.",
+            rating: 5
+        },
+        {
+            name: "Muhammad Hamza",
+            role: "Lead Developer",
+            image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+            quote: "Building seamless user experiences with React and advanced AI integration.",
             rating: 5
         }
     ];
@@ -260,7 +260,7 @@ const HeroEnhanced = () => {
                 </div>
             </section>
 
-            {/* Testimonials Section */}
+            {/* Team Section */}
             <section className="py-20 bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
@@ -270,45 +270,43 @@ const HeroEnhanced = () => {
                         className="text-center mb-16"
                     >
                         <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-                            Loved by Fashion Professionals
+                            Meet Our Team
                         </h2>
                         <p className="text-xl text-gray-400">
-                            Join thousands of designers transforming the fashion industry
+                            The passionate minds behind TailorTech's innovation
                         </p>
                     </motion.div>
 
                     <div className="grid lg:grid-cols-3 gap-8">
-                        {testimonials.map((testimonial, index) => (
+                        {teamMembers.map((member, index) => (
                             <motion.div
                                 key={index}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 viewport={{ once: true }}
-                                className="bg-gray-800 p-8 rounded-2xl border border-gray-700"
+                                className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-purple-500/50 transition-all group"
                             >
-                                <div className="flex items-center gap-1 mb-4">
-                                    {[...Array(testimonial.rating)].map((_, i) => (
-                                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                                    ))}
-                                </div>
-                                <p className="text-gray-300 mb-6 italic">
-                                    "{testimonial.quote}"
-                                </p>
-                                <div className="flex items-center gap-4">
+                                <div className="text-center mb-6">
                                     <img
-                                        src={testimonial.image}
-                                        alt={testimonial.name}
-                                        className="w-12 h-12 rounded-full object-cover"
+                                        src={member.image}
+                                        alt={member.name}
+                                        className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-purple-500/20 group-hover:border-purple-500/50 transition-all"
                                     />
-                                    <div>
-                                        <div className="font-semibold text-white">
-                                            {testimonial.name}
-                                        </div>
-                                        <div className="text-sm text-gray-400">
-                                            {testimonial.role}
-                                        </div>
+                                    <div className="font-bold text-xl text-white mb-1">
+                                        {member.name}
                                     </div>
+                                    <div className="text-purple-400 font-semibold mb-4">
+                                        {member.role}
+                                    </div>
+                                </div>
+                                <p className="text-gray-300 text-center italic">
+                                    "{member.quote}"
+                                </p>
+                                <div className="flex items-center justify-center gap-1 mt-4">
+                                    {[...Array(member.rating)].map((_, i) => (
+                                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    ))}
                                 </div>
                             </motion.div>
                         ))}
