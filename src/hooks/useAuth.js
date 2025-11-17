@@ -1,39 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useAuthContext } from '../contexts/AuthContext';
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
+  signOut
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase/config';
 
 export const useAuth = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-
-      // Store user info in localStorage for persistence
-      if (user) {
-        localStorage.setItem('authToken', user.uid);
-        localStorage.setItem('userInfo', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL
-        }));
-      } else {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userInfo');
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+  // Get user state from AuthContext to avoid duplicate listeners
+  const { user, loading } = useAuthContext();
 
   const signInWithGoogle = async () => {
     try {

@@ -5,68 +5,7 @@ import Navbar from '../../components/common/navbar';
 import Footer from '../../components/common/footer';
 
 const OurTeam = () => {
-    const teamMembers = [
-        {
-            name: "Muhammad Sheraz",
-            role: "CEO & Founder",
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-            bio: "Visionary leader driving innovation in fashion technology",
-            social: {
-                linkedin: "#",
-                twitter: "#"
-            }
-        },
-        {
-            name: "Sheeza Ijaz",
-            role: "CTO & Co-Founder",
-            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
-            bio: "Technology expert specializing in AI and 3D modeling",
-            social: {
-                linkedin: "#",
-                github: "#"
-            }
-        },
-        {
-            name: "Muhammad Hamza",
-            role: "Lead Developer",
-            image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-            bio: "Full-stack developer with expertise in React and AI integration",
-            social: {
-                linkedin: "#",
-                github: "#"
-            }
-        },
-        {
-            name: "Emily Rodriguez",
-            role: "Head of Design",
-            image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-            bio: "Award-winning fashion designer and creative director",
-            social: {
-                linkedin: "#",
-                twitter: "#"
-            }
-        },
-        {
-            name: "David Kim",
-            role: "AI Engineer",
-            image: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400",
-            bio: "Machine learning specialist with expertise in generative AI",
-            social: {
-                linkedin: "#",
-                github: "#"
-            }
-        },
-        {
-            name: "Lisa Anderson",
-            role: "Marketing Lead",
-            image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400",
-            bio: "Marketing strategist with deep experience in fashion retail",
-            social: {
-                linkedin: "#",
-                twitter: "#"
-            }
-        }
-    ];
+    const teamMembers = [];
 
     const values = [
         {

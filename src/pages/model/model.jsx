@@ -9,6 +9,8 @@ import femaleMedium from "../../assets/images/Female-medium.png";
 import femaleLarge from "../../assets/images/Female-large.png";
 import mannequinGeneratorService from "../../services/mannequinGeneratorService";
 import { Camera, Sparkles, ChartBar, PlayCircle } from "lucide-react";
+import { useAuthContext } from "../../contexts/AuthContext";
+import { trackMannequinSelection, trackActivity } from "../../services/activityTracker";
 
 // Lazy load the body measurement component
 const SimpleBodyMeasurement = lazy(() => import("../../components/BodyMeasurement/SimpleBodyMeasurement"));
@@ -20,10 +22,29 @@ const Model = ({ selectedTexture }) => {
   const [customMannequin, setCustomMannequin] = useState(null);
   const [userMeasurements, setUserMeasurements] = useState(null);
   const navigate = useNavigate();
+  const { user } = useAuthContext();
 
   const handleNext = () => {
     if (gender && (mannequinSize || customMannequin)) {
-      // Navigate to outfit preview page first
+      // Track mannequin selection
+      if (user) {
+        trackMannequinSelection(user.uid, {
+          gender,
+          size: mannequinSize,
+          customMeasurements: userMeasurements,
+          prompt: selectedTexture?.prompt,
+          texture: selectedTexture?.texture,
+          isCustom: !!customMannequin
+        }).catch(err => console.log('Tracking skipped'));
+
+        trackActivity(user.uid, 'mannequin_selected', {
+          mannequinGender: gender,
+          mannequinSize: mannequinSize,
+          measurements: userMeasurements
+        }).catch(err => console.log('Tracking skipped'));
+      }
+
+      // Navigate to outfit preview page
       navigate("/outfit-preview", {
         state: {
           gender,

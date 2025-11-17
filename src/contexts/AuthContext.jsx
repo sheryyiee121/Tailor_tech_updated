@@ -20,6 +20,10 @@ export const AuthContextProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
             setLoading(false);
+
+            // BACKEND SYNC COMPLETELY DISABLED
+            // The loop happens because any backend call triggers re-renders
+            // To enable: manually call syncUserWithBackend from a button
         });
 
         return () => unsubscribe();

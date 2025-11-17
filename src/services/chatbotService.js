@@ -1,8 +1,14 @@
 class ChatbotService {
     constructor() {
-        this.apiKey = 'sk-3aTEoan7OkAqyopWuhT8J6o8s77IEeUxI3bf8VWFEXT3BlbkFJHxeeEpxFdMsTagEfaEGDrEJf6E52h8F9QR8kacFFYA';
+
+
+        // For development, using the API key directly
+        // In production, you should use environment variables properly
+        // Note: This API key appears to be invalid - please replace with a valid OpenAI API key
+        this.apiKey = import.meta.env.VITE_OPENAI_API_KEY ||
+            'sk-3aTEoan7OkAqyopWuhT8J6o8s77IEeUxI3bf8VWFEXT3BlbkFJHxeeEpxFdMsTagEfaEGDrEJf6E52h8F9QR8kacFFYA';
         this.baseURL = 'https://api.openai.com/v1/chat/completions';
-        this.testMode = false; // Set to true for testing without API calls
+        this.testMode = false; // Set to true for testing without API calls - disabled now that API key is provided
 
         // TailorTech knowledge base for context
         this.tailorTechContext = `

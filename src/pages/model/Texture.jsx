@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import aiGenerationService from "../../services/aiGenerationService";
 
 // Placeholder background image (replace with your chosen image)
 import backgroundImage from "../../assets/images/textback.jpg"; // Add your background image here
@@ -18,24 +17,46 @@ const Texture = ({ onTextureSelect }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { prompt } = location.state || {};
+
+  // Get prompt from state or sessionStorage as fallback
+  const statePrompt = location.state?.prompt;
+  const sessionPrompt = sessionStorage.getItem('currentPrompt');
+  const prompt = statePrompt || sessionPrompt || '';
+
+  console.log('🎨 Texture component loaded!');
+  console.log('📍 Current location:', location.pathname);
+  console.log('📝 Received prompt from state:', statePrompt);
+  console.log('💾 Prompt from sessionStorage:', sessionPrompt);
+  console.log('✅ Final prompt value:', prompt);
+  console.log('🔍 Full location state:', location.state);
 
   // Array of images (no names or IDs needed)
   const images = [image1, image2, image3];
 
   useEffect(() => {
+    console.log('✅ Texture component mounted successfully!');
+    console.log('📋 Prompt in useEffect:', prompt);
+    console.log('🌍 Window location:', window.location.pathname);
+    console.log('📍 React location:', location.pathname);
+
     // Load the AI model when component mounts
     loadAIModel();
+
+    // Monitor for unexpected navigation
+    const checkInterval = setInterval(() => {
+      if (window.location.pathname !== '/texture') {
+        console.log('⚠️ UNEXPECTED NAVIGATION DETECTED!');
+        console.log('📍 Now at:', window.location.pathname);
+        clearInterval(checkInterval);
+      }
+    }, 100);
+
+    return () => clearInterval(checkInterval);
   }, []);
 
   const loadAIModel = async () => {
-    try {
-      await aiGenerationService.loadModel();
-      console.log('AI model loaded successfully');
-    } catch (error) {
-      console.error('Failed to load AI model:', error);
-      setError('Failed to load AI model. Please refresh the page.');
-    }
+    // AI model loading disabled - no backend yet
+    console.log('AI model loading skipped - no backend');
   };
 
   const handleImageClick = (image) => {
@@ -48,37 +69,9 @@ const Texture = ({ onTextureSelect }) => {
       return;
     }
 
-    setIsGenerating(true);
-    setError(null);
-    setGenerationProgress(0);
-
-    try {
-      // Simulate progress updates
-      const progressInterval = setInterval(() => {
-        setGenerationProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
-
-      // Generate design using AI
-      const result = await aiGenerationService.generateDesign(prompt);
-
-      clearInterval(progressInterval);
-      setGenerationProgress(100);
-
-      setGeneratedDesign(result);
-      console.log('AI generation result:', result);
-
-    } catch (error) {
-      console.error('AI generation failed:', error);
-      setError('AI generation failed. Please try again.');
-    } finally {
-      setIsGenerating(false);
-    }
+    // AI Generation disabled - no backend yet
+    setError('AI generation is not available yet. Please select a pre-made texture.');
+    console.log('AI generation skipped - no backend');
   };
 
   const handleNext = () => {

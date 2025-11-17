@@ -12,18 +12,24 @@ import {
   Menu,
   Home,
   Info,
-  Images
+  Images,
+  Shield
 } from "lucide-react";
-import promptStorageService from "../../services/promptStorageService";
+import { useAuthContext } from "../../contexts/AuthContext";
+import { isAdmin } from "../../config/adminConfig";
 
 const Dashboard = () => {
   const [prompt, setPrompt] = useState("");
+
+  console.log('🎨 Dashboard component rendered! Current prompt:', prompt);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recentPanelOpen, setRecentPanelOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthContext();
+  const userIsAdmin = user && isAdmin(user.email);
 
   // Check if mobile on component mount and resize
   useEffect(() => {
@@ -37,23 +43,54 @@ const Dashboard = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleGenerate = async () => {
-    if (prompt) {
-      setIsGenerating(true);
-
-      // Save prompt at runtime
-      promptStorageService.savePrompt(prompt);
-      console.log(`💾 Runtime Command Saved: "${prompt}"`);
-
-      // Simulate generation time
-      setTimeout(() => {
-        setIsGenerating(false);
-        navigate("/texture", { state: { prompt } });
-      }, 2000);
-    }
-  };
+  // Debug navigation changes
+  useEffect(() => {
+    console.log('🔍 NAVIGATION CHANGED!');
+    console.log('📍 New pathname:', location.pathname);
+    console.log('📦 Location state:', location.state);
+    console.log('🔎 Full location object:', location);
+  }, [location]);
 
   const isDashboardHome = location.pathname === "/dashboard";
+
+  console.log('🔍 Current pathname:', location.pathname);
+  console.log('🏠 Is Dashboard Home?', isDashboardHome);
+
+  // Dashboard home load effect
+  useEffect(() => {
+    if (!user || !isDashboardHome) return;
+    console.log('🏠 Dashboard home loaded for:', user.email);
+  }, [user, isDashboardHome]);
+
+  const handleGenerate = () => {
+    console.log('🎯 handleGenerate called! Prompt:', prompt);
+
+    if (!prompt || prompt.trim() === "") {
+      console.log('❌ No prompt entered');
+      return;
+    }
+
+    console.log('✅ Prompt exists, starting generation...');
+
+    // Save prompt to sessionStorage only
+    sessionStorage.setItem('currentPrompt', prompt);
+    console.log(`💾 Prompt saved: "${prompt}"`);
+
+    // Set generating state for the loading animation
+    setIsGenerating(true);
+
+    // Navigate after delay for loading effect
+    setTimeout(() => {
+      console.log('⏰ Timer complete! Navigating now...');
+      setIsGenerating(false);
+
+      // Navigate with state
+      console.log('🚀 Navigating to /texture...');
+      navigate('/texture', {
+        state: { prompt: prompt }
+      });
+    }, 2000);
+  };
 
   // Only 3 quick prompts as requested
   const quickPrompts = [
@@ -62,13 +99,8 @@ const Dashboard = () => {
     "Classic business suit"
   ];
 
-  // Get recent creations from storage
-  const recentCreations = promptStorageService.getRecentPrompts(10).map((prompt, index) => ({
-    id: index,
-    prompt: prompt,
-    date: new Date(Date.now() - index * 3600000).toLocaleDateString(),
-    image: `/api/placeholder/80/80` // Placeholder image
-  }));
+  // Get recent creations from storage (disabled - no backend)
+  const recentCreations = [];
 
   return (
     <div className="dashboard-page">
@@ -126,7 +158,8 @@ const Dashboard = () => {
               {[
                 { href: "/dashboard", label: "Home", icon: Home },
                 { href: "/about", label: "About", icon: Info },
-                { href: "/gallery", label: "Gallery", icon: Images }
+                { href: "/gallery", label: "Gallery", icon: Images },
+                ...(userIsAdmin ? [{ href: "/admin", label: "Admin Panel", icon: Shield }] : [])
               ].map((item, index) => (
                 <motion.a
                   key={item.href}
@@ -182,16 +215,33 @@ const Dashboard = () => {
                       type="text"
                       placeholder="Describe your dream outfit..."
                       value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
-                      className="w-full px-6 py-5 pr-16 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-lg placeholder-gray-400 focus:outline-none focus:border-white/40 transition-all"
+                      onFocus={(e) => console.log('🎯 Input FOCUSED!')}
+                      onBlur={(e) => console.log('💨 Input BLURRED!')}
+                      onChange={(e) => {
+                        console.log('📝 Input changed! New value:', e.target.value);
+                        setPrompt(e.target.value);
+                      }}
+                      onKeyPress={(e) => {
+                        console.log('⌨️ Key pressed:', e.key, 'Current prompt:', prompt);
+                        if (e.key === 'Enter') {
+                          console.log('⏎ ENTER KEY PRESSED! Calling handleGenerate...');
+                          e.preventDefault();
+                          handleGenerate();
+                        }
+                      }}
+                      className="w-full px-6 py-5 pr-16 bg-white/10 border border-white/20 rounded-2xl text-lg placeholder-gray-400 focus:outline-none focus:border-white/40 transition-all"
                     />
                     <button
-                      onClick={handleGenerate}
+                      onClick={() => {
+                        console.log('🖱️ BUTTON CLICKED! Prompt value:', prompt);
+                        handleGenerate();
+                      }}
                       disabled={!prompt || isGenerating}
-                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-xl transition-all ${prompt && !isGenerating
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
-                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-xl transition-all ${isGenerating
+                        ? 'bg-gray-800 text-gray-400 cursor-wait opacity-80'
+                        : prompt
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl'
+                          : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                         }`}
                     >
                       {isGenerating ? (

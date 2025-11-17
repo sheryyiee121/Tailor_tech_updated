@@ -30,6 +30,13 @@ import Plans from "./pages/pricing/Plans";
 // About Pages
 import OurTeam from "./pages/about/OurTeam";
 
+// Admin Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UsersManagement from "./pages/admin/UsersManagement";
+import OrdersManagement from "./pages/admin/OrdersManagement";
+import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
+
+
 // PrivateRoute Component
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -98,6 +105,39 @@ function App() {
             element={
               <PrivateRoute>
                 <CustomOrderFixed />
+              </PrivateRoute>
+            }
+          />
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <PrivateRoute>
+                <UsersManagement />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <PrivateRoute>
+                <OrdersManagement />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <PrivateRoute>
+                <AnalyticsDashboard />
               </PrivateRoute>
             }
           />

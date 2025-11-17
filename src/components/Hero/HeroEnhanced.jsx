@@ -32,29 +32,6 @@ const HeroEnhanced = () => {
         }
     ];
 
-    const teamMembers = [
-        {
-            name: "Muhammad Sheraz",
-            role: "CEO & Founder",
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-            quote: "Leading the revolution in AI-powered fashion design with cutting-edge technology.",
-            rating: 5
-        },
-        {
-            name: "Sheeza Ijaz",
-            role: "CTO & Co-Founder",
-            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-            quote: "Developing innovative 3D visualization and AI algorithms for the fashion industry.",
-            rating: 5
-        },
-        {
-            name: "Muhammad Hamza",
-            role: "Lead Developer",
-            image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-            quote: "Building seamless user experiences with React and advanced AI integration.",
-            rating: 5
-        }
-    ];
 
     return (
         <>
@@ -260,59 +237,6 @@ const HeroEnhanced = () => {
                 </div>
             </section>
 
-            {/* Team Section */}
-            <section className="py-20 bg-gray-900">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-center mb-16"
-                    >
-                        <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-                            Meet Our Team
-                        </h2>
-                        <p className="text-xl text-gray-400">
-                            The passionate minds behind TailorTech's innovation
-                        </p>
-                    </motion.div>
-
-                    <div className="grid lg:grid-cols-3 gap-8">
-                        {teamMembers.map((member, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-purple-500/50 transition-all group"
-                            >
-                                <div className="text-center mb-6">
-                                    <img
-                                        src={member.image}
-                                        alt={member.name}
-                                        className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-purple-500/20 group-hover:border-purple-500/50 transition-all"
-                                    />
-                                    <div className="font-bold text-xl text-white mb-1">
-                                        {member.name}
-                                    </div>
-                                    <div className="text-purple-400 font-semibold mb-4">
-                                        {member.role}
-                                    </div>
-                                </div>
-                                <p className="text-gray-300 text-center italic">
-                                    "{member.quote}"
-                                </p>
-                                <div className="flex items-center justify-center gap-1 mt-4">
-                                    {[...Array(member.rating)].map((_, i) => (
-                                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    ))}
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* CTA Section */}
             <section className="py-20 bg-gradient-to-r from-purple-600 to-pink-600">
