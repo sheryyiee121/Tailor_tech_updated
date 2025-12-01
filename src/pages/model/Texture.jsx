@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import GLBModelViewer from "../../components/GLBModelViewer";
 
 // Placeholder background image (replace with your chosen image)
 import backgroundImage from "../../assets/images/textback.jpg"; // Add your background image here
-
-// Placeholder model ramp images (replace with your sourced images)
-import image1 from "../../assets/images/cube.png"; // Cone-shaped ramp image 1
-import image2 from "../../assets/images/cube.png"; // Cone-shaped ramp image 2
-import image3 from "../../assets/images/cube.png"; // Cone-shaped ramp image 3
 
 const Texture = ({ onTextureSelect }) => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -23,6 +19,12 @@ const Texture = ({ onTextureSelect }) => {
   const sessionPrompt = sessionStorage.getItem('currentPrompt');
   const prompt = statePrompt || sessionPrompt || '';
 
+  // Always show just the dress in texture selection
+  const getModelPath = () => {
+    // This page should only show dresses, not full models with people
+    return '/models/generated.glb'; // Just the dress
+  };
+
   console.log('🎨 Texture component loaded!');
   console.log('📍 Current location:', location.pathname);
   console.log('📝 Received prompt from state:', statePrompt);
@@ -30,8 +32,27 @@ const Texture = ({ onTextureSelect }) => {
   console.log('✅ Final prompt value:', prompt);
   console.log('🔍 Full location state:', location.state);
 
-  // Array of images (no names or IDs needed)
-  const images = [image1, image2, image3];
+  // Array of 3D model configurations - all start with the same view
+  const modelConfigs = [
+    {
+      id: 1,
+      cameraPosition: [0, 0, 50],
+      initialRotation: [0, 0, 0],
+      name: "View 1"
+    },
+    {
+      id: 2,
+      cameraPosition: [0, 0, 50],
+      initialRotation: [0, 0, 0],
+      name: "View 2"
+    },
+    {
+      id: 3,
+      cameraPosition: [0, 0, 50],
+      initialRotation: [0, 0, 0],
+      name: "View 3"
+    }
+  ];
 
   useEffect(() => {
     console.log('✅ Texture component mounted successfully!');
@@ -59,8 +80,8 @@ const Texture = ({ onTextureSelect }) => {
     console.log('AI model loading skipped - no backend');
   };
 
-  const handleImageClick = (image) => {
-    setSelectedImage(image);
+  const handleModelClick = (config) => {
+    setSelectedImage(config);
   };
 
   const handleAIGeneration = async () => {
@@ -77,7 +98,8 @@ const Texture = ({ onTextureSelect }) => {
   const handleNext = () => {
     if (selectedImage) {
       const textureData = {
-        texture: selectedImage,
+        texture: getModelPath(), // Using the appropriate model based on prompt
+        modelConfig: selectedImage, // Pass the selected view configuration
         prompt: prompt,
         isAIGenerated: false
       };
@@ -113,21 +135,21 @@ const Texture = ({ onTextureSelect }) => {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-6xl mx-auto px-6 py-12">
-        <h2 className="text-5xl font-extrabold mb-8 text-white drop-shadow-lg text-center">
+        <h2 className="text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-orange-300 drop-shadow-lg text-center">
           AI-POWERED DESIGN GENERATION
         </h2>
 
         {/* AI Generation Section */}
         <div className="w-full max-w-4xl mb-12">
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl p-8 border border-blue-500/30">
-            <h3 className="text-2xl font-bold mb-4 text-blue-300">
+          <div className="bg-gradient-to-br from-amber-950/80 to-stone-900/80 backdrop-blur-md rounded-2xl p-10 shadow-2xl border border-amber-900/20">
+            <h3 className="text-2xl font-bold mb-6 text-amber-200 text-center tracking-wide">
               Generate Custom Design with AI
             </h3>
 
             {prompt && (
-              <div className="mb-6 p-4 bg-blue-500/20 rounded-lg border border-blue-400/30">
-                <p className="text-blue-200 font-medium">Prompt:</p>
-                <p className="text-white">{prompt}</p>
+              <div className="mb-8 p-5 bg-gradient-to-r from-amber-900/30 to-stone-800/30 rounded-xl border border-amber-700/20">
+                <p className="text-amber-300 font-semibold text-sm uppercase tracking-wider mb-2">Prompt:</p>
+                <p className="text-amber-50 text-lg">{prompt}</p>
               </div>
             )}
 
@@ -135,9 +157,9 @@ const Texture = ({ onTextureSelect }) => {
               <button
                 onClick={handleAIGeneration}
                 disabled={!prompt}
-                className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all duration-300 ${prompt
-                  ? "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white hover:scale-105 shadow-lg"
-                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                className={`w-full py-5 px-10 rounded-lg font-bold text-lg uppercase tracking-widest transition-all duration-300 transform ${prompt
+                  ? "bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-500 hover:to-orange-600 text-white hover:scale-105 shadow-[0_10px_30px_rgba(180,83,9,0.4)] hover:shadow-[0_15px_40px_rgba(180,83,9,0.6)]"
+                  : "bg-stone-700 text-stone-500 cursor-not-allowed"
                   }`}
               >
                 🎨 Generate AI Design
@@ -216,41 +238,53 @@ const Texture = ({ onTextureSelect }) => {
         )}
 
         {/* Traditional Texture Selection */}
-        <div className="w-full max-w-4xl">
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl p-8 border border-blue-500/30">
-            <h3 className="text-2xl font-bold mb-6 text-blue-300 text-center">
-              Or Select Pre-made Texture
-            </h3>
+        <div className="w-full">
+          <h3 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-orange-300 text-center drop-shadow-lg">
+            Select Your Dress View
+          </h3>
 
-            <div className="flex flex-wrap justify-center gap-8 mb-8">
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleImageClick(image)}
-                  className={`cursor-pointer transform transition-all duration-300 hover:scale-110 ${selectedImage === image ? 'ring-4 ring-blue-400' : ''
-                    }`}
-                >
-                  <img
-                    src={image}
-                    alt={`Texture ${index + 1}`}
-                    className="w-40 h-60 object-cover rounded-lg"
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={handleNext}
-                disabled={!selectedImage}
-                className={`px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 ${selectedImage
-                  ? "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white hover:scale-105 shadow-lg"
-                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
-                  }`}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 px-4">
+            {modelConfigs.map((config) => (
+              <div
+                key={config.id}
+                className="relative cursor-pointer"
+                onClick={() => handleModelClick(config)}
               >
-                Continue with Selected Texture
-              </button>
-            </div>
+                {/* 3D Model Viewer - COMPLETELY OPEN */}
+                <div className="w-full h-[600px] relative">
+                  <GLBModelViewer
+                    modelPath={getModelPath()}
+                    cameraPosition={config.cameraPosition}
+                    initialRotation={config.initialRotation}
+                    autoRotate={false}
+                    enableControls={true}
+                    className="w-full h-full"
+                  />
+
+                  {/* Selected Indicator - Simple */}
+                  {selectedImage?.id === config.id && (
+                    <div className="absolute top-2 left-0 right-0 text-center">
+                      <p className="text-green-400 text-sm font-semibold">
+                        Selected
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-16">
+            <button
+              onClick={handleNext}
+              disabled={!selectedImage}
+              className={`px-12 py-5 rounded-xl font-bold text-lg uppercase tracking-wider transition-all duration-300 transform ${selectedImage
+                ? "bg-gradient-to-r from-amber-700 to-orange-800 hover:from-amber-600 hover:to-orange-700 text-white hover:scale-105 shadow-[0_10px_30px_rgba(180,83,9,0.4)] hover:shadow-[0_15px_40px_rgba(180,83,9,0.6)]"
+                : "bg-stone-700 text-stone-500 cursor-not-allowed"
+                }`}
+            >
+              Continue with Selected View
+            </button>
           </div>
         </div>
       </div>

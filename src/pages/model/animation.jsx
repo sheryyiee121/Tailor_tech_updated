@@ -73,16 +73,33 @@ const DiscoLights = () => {
 };
 
 // Model3D Component (with outfit texture support)
-const Model3D = ({ isAnimating, outfitTexture, fabric }) => {
+const Model3D = ({ isAnimating, outfitTexture, fabric, prompt }) => {
   const group = useRef();
-  const { scene: girlScene, animations } = useGLTF("/models/er.glb");
+
+  // Choose model based on prompt
+  console.log('Animation page - Prompt received:', prompt);
+  const promptLower = prompt ? prompt.toLowerCase().trim() : '';
+  // More flexible matching
+  const shouldUseLadyModel = promptLower.includes('lady') ||
+    promptLower.includes('black dress') ||
+    promptLower.includes('elegant black') ||
+    promptLower.includes('evening dress');
+  const modelPath = shouldUseLadyModel
+    ? "/models/lady_in_black_dress.glb"
+    : "/models/er.glb";
+  console.log('Prompt lower:', promptLower);
+  console.log('Should use lady model:', shouldUseLadyModel);
+  console.log('Model path selected:', modelPath);
+
+  const { scene: girlScene, animations } = useGLTF(modelPath);
   const { scene: spotlightScene } = useGLTF("/models/spotlight.glb");
   const { actions } = useAnimations(animations, group);
   const direction = useRef(1);
 
-  // Apply outfit texture if provided
+  // Apply outfit texture if provided (but not for pre-dressed models like lady_in_black_dress)
   useEffect(() => {
-    if (outfitTexture && girlScene) {
+    const isPreDressedModel = modelPath.includes('lady_in_black_dress');
+    if (outfitTexture && girlScene && !isPreDressedModel) {
       const loadOutfit = async () => {
         try {
           const { default: outfitMappingService } = await import('../../services/outfitMappingService');
@@ -94,7 +111,7 @@ const Model3D = ({ isAnimating, outfitTexture, fabric }) => {
       };
       loadOutfit();
     }
-  }, [outfitTexture, fabric, girlScene]);
+  }, [outfitTexture, fabric, girlScene, modelPath]);
 
   useEffect(() => {
     const walkAction = actions["mixamo.com"] || actions[animations[0]?.name];
@@ -226,38 +243,34 @@ const WalkCanvas = () => {
 
   return (
     <div className="relative w-full h-screen bg-gradient-to-b from-gray-800 via-gray-900 to-black overflow-hidden">
-      {/* Header Bar */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white">Fashion Runway</h1>
-            {outfitApplied && (
-              <span className="text-sm text-green-400 flex items-center gap-1">
-                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                Outfit Applied
-              </span>
-            )}
-          </div>
-
-          {/* Control Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => setIsAnimating(!isAnimating)}
-              className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 ${isAnimating
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-green-500 hover:bg-green-600 text-white'
-                }`}
-            >
-              {isAnimating ? 'Pause' : 'Start'} Show
-            </button>
-            <button
-              onClick={() => navigate(-1)}
-              className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all duration-300"
-            >
-              Back
-            </button>
-          </div>
+      {/* Compact Side Controls */}
+      <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
+        <div className="bg-black/70 backdrop-blur-md rounded-lg p-3 flex flex-col gap-2">
+          <h1 className="text-lg font-bold text-white">Fashion Runway</h1>
+          {outfitApplied && (
+            <span className="text-xs text-green-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+              Outfit Applied
+            </span>
+          )}
         </div>
+
+        <button
+          onClick={() => setIsAnimating(!isAnimating)}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${isAnimating
+            ? 'bg-red-500 hover:bg-red-600 text-white'
+            : 'bg-green-500 hover:bg-green-600 text-white'
+            }`}
+        >
+          {isAnimating ? 'Pause' : 'Start'} Show
+        </button>
+
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all duration-300"
+        >
+          Back
+        </button>
       </div>
 
       {/* Design Info Panel */}
@@ -530,7 +543,7 @@ const WalkCanvas = () => {
         <Canvas
           shadows
           dpr={[1, 2]}
-          camera={{ position: [0, 2, 12], fov: 45 }}
+          camera={{ position: [0, 2.5, 15], fov: 45 }}
           className="w-full h-full"
           gl={{
             antialias: true,
@@ -641,6 +654,7 @@ const WalkCanvas = () => {
             isAnimating={isAnimating}
             outfitTexture={outfitApplied ? texture : null}
             fabric={selectedFabric}
+            prompt={prompt}
           />
 
           {/* Audio */}

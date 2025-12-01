@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows, PresentationControls, Stage } from '@react-three/drei';
+import { OrbitControls, ContactShadows, PresentationControls, Stage, useGLTF } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
@@ -18,31 +18,48 @@ import {
 } from 'lucide-react';
 import * as THREE from 'three';
 import outfitMappingService from '../../services/outfitMappingService';
-import { useGLTF } from '@react-three/drei';
+
+// Preload models
+useGLTF.preload('/models/lady_in_black_dress.glb');
+useGLTF.preload('/models/er.glb');
+useGLTF.preload('/models/mannequin_female.glb');
 
 // 3D Model Component with Outfit
-const MannequinWithOutfit = ({ gender, size, outfitImage, fabric, rotation }) => {
+const MannequinWithOutfit = ({ gender, size, outfitImage, fabric, rotation, prompt }) => {
     const [outfitMaterial, setOutfitMaterial] = useState(null);
 
-    // Load appropriate model based on gender
-    // Using the existing model from animation page as fallback
-    const modelPath = gender === 'male'
-        ? '/models/male-mannequin.glb'
-        : '/models/er.glb'; // Using existing female model as fallback
+    // Load appropriate model based on gender and prompt
+    const promptLower = prompt ? prompt.toLowerCase().trim() : '';
+    const shouldUseLadyModel = promptLower.includes('lady') ||
+        promptLower.includes('black dress') ||
+        promptLower.includes('elegant black') ||
+        promptLower.includes('evening dress');
 
-    let modelData;
-    try {
-        modelData = useGLTF(modelPath);
-    } catch (error) {
-        // Fallback to the animation model if specific mannequin not found
-        modelData = useGLTF('/models/er.glb');
-    }
+    console.log('OutfitPreview - Prompt:', prompt, 'Should use lady model:', shouldUseLadyModel);
 
+    const modelPath = shouldUseLadyModel
+        ? '/models/lady_in_black_dress.glb'
+        : gender === 'male'
+            ? '/models/male-mannequin.glb'
+            : '/models/er.glb'; // Using existing female model as fallback
+
+    console.log('Attempting to load model from path:', modelPath);
+
+    // Use the model - hooks can't be conditional
+    const modelData = useGLTF(modelPath);
     const { scene } = modelData;
+    console.log('MannequinWithOutfit - Model loaded:', modelPath);
+    console.log('Scene object:', scene);
 
     useEffect(() => {
         const loadOutfit = async () => {
             try {
+                // Don't apply outfit to pre-dressed models
+                if (modelPath.includes('lady_in_black_dress')) {
+                    console.log('Skipping outfit application for pre-dressed model');
+                    return;
+                }
+
                 const material = await outfitMappingService.createOutfitMaterial(outfitImage, fabric);
                 setOutfitMaterial(material);
 
@@ -64,14 +81,14 @@ const MannequinWithOutfit = ({ gender, size, outfitImage, fabric, rotation }) =>
                 outfitMaterial.dispose();
             }
         };
-    }, [outfitImage, fabric, scene]);
+    }, [outfitImage, fabric, scene, modelPath]);
 
     return (
         <group rotation={[0, rotation, 0]}>
             <primitive
                 object={scene}
-                scale={1.8}
-                position={[0, -1, 0]}
+                scale={modelPath.includes('lady_in_black_dress') ? 1.5 : 1.8}
+                position={[0, modelPath.includes('lady_in_black_dress') ? -1.5 : -1, 0]}
             />
         </group>
     );
@@ -89,6 +106,11 @@ const OutfitPreview = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { gender, mannequinSize, texture, generatedImage, prompt, userMeasurements } = location.state || {};
+
+    console.log('OutfitPreview Page - Full state:', location.state);
+    console.log('OutfitPreview Page - Prompt:', prompt);
+    console.log('OutfitPreview Page - Texture:', texture);
+    console.log('OutfitPreview Page - GeneratedImage:', generatedImage);
 
     const [rotation, setRotation] = useState(0);
     const [selectedView, setSelectedView] = useState('front');
@@ -199,16 +221,17 @@ const OutfitPreview = () => {
                                             rotation={[0.13, 0.1, 0]}
                                         >
                                             <MannequinWithOutfit
+                                                key={prompt} // Force remount when prompt changes
                                                 gender={gender}
                                                 size={mannequinSize}
-                                                outfitImage={generatedImage || texture}
+                                                outfitImage={(prompt && prompt.toLowerCase().includes('lady')) ? null : (generatedImage || texture)}
                                                 fabric={selectedFabric}
                                                 rotation={rotation}
+                                                prompt={prompt}
                                             />
                                         </PresentationControls>
                                     </Suspense>
 
-                                    <Environment preset="studio" />
                                     <ambientLight intensity={0.5} />
                                     <spotLight
                                         position={[10, 10, 10]}

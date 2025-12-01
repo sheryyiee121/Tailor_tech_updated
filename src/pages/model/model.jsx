@@ -1,5 +1,5 @@
 import React, { useState, Suspense, lazy } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import backgroundImage from "../../assets/images/textback.jpg";
 import maleSmall from "../../assets/images/male-small.png";
 import maleMedium from "../../assets/images/male-Medium.png";
@@ -15,14 +15,20 @@ import { trackMannequinSelection, trackActivity } from "../../services/activityT
 // Lazy load the body measurement component
 const SimpleBodyMeasurement = lazy(() => import("../../components/BodyMeasurement/SimpleBodyMeasurement"));
 
-const Model = ({ selectedTexture }) => {
+const Model = () => {
   const [gender, setGender] = useState("");
   const [mannequinSize, setMannequinSize] = useState("");
   const [showBodyMeasurement, setShowBodyMeasurement] = useState(false);
   const [customMannequin, setCustomMannequin] = useState(null);
   const [userMeasurements, setUserMeasurements] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthContext();
+
+  // Get the texture data from navigation state
+  const selectedTexture = location.state;
+  console.log('Model page - location.state:', location.state);
+  console.log('Model page - Prompt:', selectedTexture?.prompt);
 
   const handleNext = () => {
     if (gender && (mannequinSize || customMannequin)) {
